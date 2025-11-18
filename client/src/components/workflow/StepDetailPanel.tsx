@@ -1,10 +1,15 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, User, Wrench, Zap, Clock, Hash } from "lucide-react";
+import { ArrowRight, ArrowLeft, User, Wrench, Zap, Clock, Hash, Edit, Trash2 } from "lucide-react";
 import type { Step } from "@/types/workflow";
 
 interface StepDetailPanelProps {
   step: Step | undefined;
+  isFirstStep?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onMoveLeft?: () => void;
 }
 
 /**
@@ -44,7 +49,7 @@ function InfoCard({
   );
 }
 
-export function StepDetailPanel({ step }: StepDetailPanelProps) {
+export function StepDetailPanel({ step, isFirstStep = false, onEdit, onDelete, onMoveLeft }: StepDetailPanelProps) {
   if (!step) {
     return (
       <div className="border-t bg-gradient-to-br from-muted/30 via-background to-muted/20 p-8 md:p-12 text-center">
@@ -60,12 +65,48 @@ export function StepDetailPanel({ step }: StepDetailPanelProps) {
       aria-label="Step details"
     >
       <div className="container max-w-5xl mx-auto space-y-8">
-        {/* Header */}
-        <div>
-          <h3 className="text-2xl font-bold text-foreground mb-2">Step Details</h3>
-          <p className="text-sm text-foreground/60">
-            Detailed information about this workflow step
-          </p>
+        {/* Header with action buttons */}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-2xl font-bold text-foreground mb-2">Step Details</h3>
+            <p className="text-sm text-foreground/60">
+              Detailed information about this workflow step
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {onMoveLeft && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onMoveLeft}
+                disabled={isFirstStep}
+                title={isFirstStep ? "Cannot move first step left" : "Move step left (earlier in workflow)"}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Move Left
+              </Button>
+            )}
+            {onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onEdit}
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={onDelete}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Metadata Grid */}

@@ -18,7 +18,7 @@ import { StepFormDialog } from "@/components/workflow/StepFormDialog";
 import type { Step } from "@/types/workflow";
 
 export function WorkflowConsolePage() {
-  const { state, toggleEditMode, addStep, updateStep, deleteStep } = useApp();
+  const { state, addStep, updateStep, deleteStep, moveStepLeft } = useApp();
   const currentSession = useCurrentSession();
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
 
@@ -95,6 +95,13 @@ export function WorkflowConsolePage() {
     }
   };
 
+  // Handle move step left
+  const handleMoveStepLeft = (step: Step) => {
+    if (currentSession) {
+      moveStepLeft(currentSession.session_id, step.id);
+    }
+  };
+
   // Handle step form submit
   const handleStepFormSubmit = (data: {
     actor: string;
@@ -116,6 +123,11 @@ export function WorkflowConsolePage() {
 
   // Find selected step (only when session exists)
   const selectedStep = currentSession?.steps.find((s) => s.id === selectedStepId);
+
+  // Check if selected step is the first step
+  const isFirstStep = selectedStep
+    ? [...(currentSession?.steps || [])].sort((a, b) => a.order - b.order)[0]?.id === selectedStep.id
+    : false;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
@@ -155,21 +167,22 @@ export function WorkflowConsolePage() {
             title={currentSession.title}
             createdAt={currentSession.created_at}
             description={currentSession.description}
-            isEditMode={state.isEditMode}
-            onToggleEditMode={toggleEditMode}
           />
 
           <FlowMap
             steps={currentSession.steps}
             selectedStepId={selectedStepId}
-            isEditMode={state.isEditMode}
             onSelectStep={setSelectedStepId}
-            onEditStep={handleEditStep}
-            onDeleteStep={handleDeleteStep}
             onAddStep={handleAddStep}
           />
 
-          <StepDetailPanel step={selectedStep} />
+          <StepDetailPanel
+            step={selectedStep}
+            isFirstStep={isFirstStep}
+            onEdit={selectedStep ? () => handleEditStep(selectedStep) : undefined}
+            onDelete={selectedStep ? () => handleDeleteStep(selectedStep) : undefined}
+            onMoveLeft={selectedStep ? () => handleMoveStepLeft(selectedStep) : undefined}
+          />
         </>
       )}
 
