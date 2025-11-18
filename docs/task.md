@@ -139,3 +139,153 @@ Claude Code:
   部署到 Replit ✅
   一键完成 ✅
 ```
+
+## 10. Iteration 004: UI 精致化任务 (2025-11-18)
+
+> **目标**: 将粗糙的 UI 提升到 Figma/Framer 级别
+
+### Phase 1: StepNode 重构 ✅
+
+- [x] 创建自定义阴影工具类 (shadow-card 系列)
+  - **实现**: client/src/index.css (+40 行)
+  - 包含默认、hover、selected 三种阴影
+  - 深色模式变体
+- [x] 增大卡片尺寸
+  - w-64 h-32 → w-80 h-48 (256×128px → 320×192px)
+- [x] 增加内边距
+  - p-4 → p-6 (16px → 24px)
+- [x] 建立 5 级视觉层次
+  - output_label: text-lg font-semibold
+  - actor badge: 渐变背景 (from-X-500 to-X-600)
+  - skill: text-sm text-foreground/70
+  - tool: text-xs text-foreground/50
+  - order: text-xs font-light text-foreground/40
+- [x] 增强 hover 效果
+  - -translate-y-1 + scale-[1.02]
+  - shadow-card-hover
+  - border-primary/50
+- [x] 增强 selected 效果
+  - bg-gradient-to-br from-primary/5 via-card to-card
+  - shadow-card-selected
+  - border-primary
+- [x] 优化动画
+  - duration-300 ease-out
+
+### Phase 2: FlowMap 增强 ✅
+
+- [x] 添加渐变背景
+  - bg-gradient-to-b from-background via-muted/20 to-background
+- [x] 增加垂直间距
+  - py-8 md:py-12 → py-12 md:py-16
+- [x] 增加水平间距
+  - gap-4 md:gap-6 → gap-6 md:gap-8
+- [x] 优化箭头设计
+  - 尺寸: w-5 h-5 md:w-6 h-6 → w-6 h-6 md:w-7 h-7
+  - 颜色: text-muted-foreground → text-primary/40
+  - 描边: strokeWidth={2.5}
+
+### Phase 3: StepDetailPanel 重构 ✅
+
+- [x] 创建 InfoCard 组件
+  - 图标 + 标签结构
+  - 用于展示 Order, Timestamp, Actor, Tool, Skill
+- [x] 导入 Lucide 图标
+  - Hash, Clock, User, Wrench, Zap, ArrowRight
+- [x] 重构元数据展示
+  - 表单式 dl/dt/dd → 卡片网格
+  - grid-cols-1 md:grid-cols-2 lg:grid-cols-3
+- [x] 重构 Input/Output 展示
+  - 独立 Card 组件
+  - Input: border-border/50, bg-card
+  - Output: border-primary/20, bg-gradient-to-br from-primary/5
+  - 添加图标和 uppercase 标题
+- [x] 优化 Summary 展示
+  - Card 组件包裹
+  - bg-muted/20
+- [x] 添加渐变背景
+  - bg-gradient-to-br from-muted/30 via-background to-muted/20
+- [x] 改进排版
+  - 标题: text-2xl font-bold
+  - section 标题: uppercase tracking-wide
+
+### Phase 4: SessionHeader 优化 ✅
+
+- [x] 增大标题字号
+  - text-xl md:text-2xl → text-2xl md:text-3xl
+- [x] 增强字重
+  - font-semibold → font-bold
+- [x] 添加 tracking-tight
+- [x] 增强背景模糊
+  - backdrop-blur-sm → backdrop-blur-md
+- [x] 提高不透明度
+  - bg-background/80 → bg-background/90
+- [x] 添加阴影
+  - shadow-sm
+- [x] 优化时间文本
+  - text-muted-foreground → text-foreground/60 font-medium
+- [x] Clock 图标品牌色
+  - text-primary
+- [x] 增加间距
+  - px-4 md:px-6 → px-6 md:px-8
+  - py-4 md:py-6 → py-5 md:py-7
+
+### Phase 5: 全局优化 ✅
+
+- [x] 添加页面渐变背景
+  - bg-background → bg-gradient-to-br from-background via-muted/10 to-background
+- [x] 优化 Loading 状态
+  - spinner: border-b-2 → border-b-2 border-t-2
+  - 文本: text-muted-foreground → text-foreground/60 font-medium
+- [x] 优化 Error 状态
+  - emoji 尺寸: text-4xl → text-5xl
+  - 标题: font-semibold → font-bold
+  - 文本: text-muted-foreground → text-foreground/60 leading-relaxed
+
+### 测试任务 ✅
+
+- [x] TypeScript 类型检查
+  - `cd client && npx tsc --noEmit`
+- [x] 生产构建测试
+  - `cd client && npm run build`
+  - 验证输出: CSS 28.26 KB, JS 233.25 KB
+- [x] 预览服务器测试
+  - `cd client && npm run preview`
+- [x] 开发服务器测试
+  - `cd client && npm run dev`
+- [x] 浏览器验证
+  - 检查控制台无错误
+  - 验证所有交互正常
+  - 确认视觉质量提升
+
+### 文档任务 ✅
+
+- [x] 创建 docs/iteration-004-ui-refinement.md
+  - 详细设计分析和优化方案
+- [x] 更新 docs/plan.md
+  - 添加 Iteration 004 完成记录
+- [x] 更新 docs/context.md
+  - 添加实施细节和技术要点
+- [x] 更新 docs/task.md
+  - 添加完整任务清单
+
+### 成功标准验证 ✅
+
+- [x] 清晰的视觉层次 - output_label 一眼识别
+- [x] 充足的留白 - 卡片增大 25%，内边距增加 50%
+- [x] 精致的阴影系统 - 3 层阴影 (默认/hover/selected)
+- [x] 丰富的微交互 - hover 4 个维度变化
+- [x] 统一的设计语言 - duration-300 ease-out
+- [x] 专业的渐变应用 - badge、背景、选中状态
+- [x] 达到 Figma/Framer 质量水准
+
+### 关键指标对比
+
+```
+节点尺寸:    256×128px → 320×192px (+25%)
+内边距:      16px → 24px (+50%)
+主标题字号:  14px → 18px (+29%)
+阴影层数:    1 层 → 3 层
+hover 维度:  1 个 → 4 个
+代码改动:    6 个文件，~250 行
+构建大小:    CSS 28.26 KB, JS 233.25 KB
+```
