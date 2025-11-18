@@ -1,73 +1,182 @@
-# React + TypeScript + Vite
+# Workflow Console
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**可视化多 Coach 协作流程的时间轴工具**
 
-Currently, two official plugins are available:
+一个专业的 Web 应用，用于展示 AgentOS 多 Coach 协作工作流的可视化时间轴。通过清晰的节点卡片和详细信息面板，帮助理解复杂的协作流程。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ 特性
 
-## React Compiler
+- 📊 **线性时间轴可视化** - 将多步骤协作流程展示为直观的时间轴
+- 🎨 **角色配色系统** - 每个 Coach/工具使用独特的颜色标识
+- 🖱️ **交互式节点** - 点击节点查看详细信息，支持键盘导航
+- 📱 **响应式设计** - 适配桌面和移动设备
+- ⚡ **流畅动画** - 200ms 过渡动画，提供舒适的交互体验
+- ♿ **无障碍支持** - 完整的 ARIA 标签和键盘导航
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🎯 角色配色
 
-## Expanding the ESLint configuration
+| 角色 | 颜色 | 用途 |
+|------|------|------|
+| Coach C | 🔵 蓝色 | 信息处理与知识整理 |
+| Coach A | 🟢 绿色 | 架构设计与规划 |
+| Coach E | 🟣 紫色 | 工程实现与开发 |
+| Replit | 🟠 橙色 | 工具执行环境 |
+| Knowledge-Garden | 💚 翡翠绿 | 知识库碰撞 |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🚀 快速开始
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 环境要求
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Node.js >= 18
+- npm >= 9
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 安装依赖
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 开发模式
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+访问 http://localhost:5173 查看应用。
+
+### 生产构建
+
+```bash
+npm run build
+```
+
+构建产物位于 `dist/` 目录。
+
+### 预览构建
+
+```bash
+npm run preview
+```
+
+## 📂 项目结构
+
+```
+client/
+├── public/
+│   └── data/
+│       └── workflow-log-sample.json  # 示例数据
+├── src/
+│   ├── components/
+│   │   ├── ui/                       # shadcn UI 基础组件
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── badge.tsx
+│   │   │   └── separator.tsx
+│   │   └── workflow/                 # 工作流组件
+│   │       ├── SessionHeader.tsx     # 顶部会话信息
+│   │       ├── FlowMap.tsx           # 流程图容器
+│   │       ├── StepNode.tsx          # 步骤节点卡片
+│   │       └── StepDetailPanel.tsx   # 详情面板
+│   ├── pages/
+│   │   └── WorkflowConsolePage.tsx   # 主页面
+│   ├── types/
+│   │   └── workflow.ts               # TypeScript 类型定义
+│   ├── lib/
+│   │   └── utils.ts                  # 工具函数
+│   ├── App.tsx                       # 应用入口
+│   ├── main.tsx                      # React 挂载点
+│   └── index.css                     # 全局样式 + Tailwind
+├── tailwind.config.ts                # Tailwind 配置
+├── components.json                   # shadcn UI 配置
+└── vite.config.ts                    # Vite 配置
+```
+
+## 🎨 技术栈
+
+- **React 19** - UI 框架
+- **TypeScript** - 类型安全
+- **Vite 7** - 构建工具
+- **Tailwind CSS 3** - 样式框架
+- **shadcn UI** - 组件库（new-york 风格）
+- **Lucide React** - 图标库
+- **Google Fonts** - Inter + Noto Sans SC
+
+## 📊 数据格式
+
+应用从 `/data/workflow-log-sample.json` 加载数据。数据格式请参考项目根目录的 `docs/workflow-log-schema.md`。
+
+### 示例数据结构
+
+```json
+{
+  "session_id": "2025-11-18-example",
+  "title": "协作流程标题",
+  "created_at": "2025-11-18T10:00:00+08:00",
+  "description": "流程描述",
+  "steps": [
+    {
+      "id": "step-01",
+      "order": 1,
+      "timestamp": "2025-11-18T10:05:00+08:00",
+      "actor": "Coach C",
+      "skill": "knowledge-processing",
+      "tool": "Claude Code",
+      "input_label": "输入对象描述",
+      "output_label": "输出对象描述",
+      "summary": "步骤摘要（可选）",
+      "tags": ["tag1", "tag2"]
+    }
+  ]
+}
+```
+
+## ⌨️ 键盘快捷键
+
+- `←` **左箭头** - 选择上一个步骤
+- `→` **右箭头** - 选择下一个步骤
+
+## 🎨 设计系统
+
+### 颜色
+
+- **Primary (蓝色)**: `hsl(217 91% 60%)` - 主要交互色
+- **Accent (绿色)**: `hsl(142 76% 36%)` - 强调色
+- **Background**: `hsl(0 0% 98%)` - 浅灰白背景
+- **Border**: `hsl(214 15% 91%)` - 边框颜色
+
+### 圆角
+
+- `rounded-sm`: 3px
+- `rounded-md`: 6px
+- `rounded-lg`: 9px
+
+### 阴影
+
+- `shadow-sm`: 轻微阴影
+- `shadow-md`: 中等阴影（hover 状态）
+- `shadow-lg`: 较强阴影
+
+## 🚢 部署
+
+### Replit 部署
+
+详见项目根目录的 `docs/deployment.md`。
+
+### 其他平台
+
+支持部署到任何静态网站托管平台：
+
+- Vercel
+- Netlify
+- GitHub Pages
+- Cloudflare Pages
+
+## 📄 许可证
+
+MIT
+
+## 🙏 致谢
+
+- 设计灵感来自 Linear、Vercel、Figma
+- UI 组件基于 [shadcn/ui](https://ui.shadcn.com/)
+- 参考项目：PromptImagine

@@ -39,16 +39,16 @@ function formatDate(isoString: string): string {
 export function StepDetailPanel({ step }: StepDetailPanelProps) {
   if (!step) {
     return (
-      <div className="border-t bg-muted/30 p-8 text-center text-muted-foreground">
+      <div className="border-t bg-muted/30 p-6 md:p-8 text-center text-muted-foreground">
         选择一个节点查看详细信息
       </div>
     );
   }
 
   return (
-    <div className="border-t bg-muted/30 p-8" role="region" aria-label="Step details">
+    <div className="border-t bg-muted/30 p-6 md:p-8" role="region" aria-label="Step details">
       <div className="container max-w-4xl mx-auto">
-        <h3 className="text-xl font-semibold mb-6">Step Details</h3>
+        <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">Step Details</h3>
 
         {/* Basic info grid */}
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-6">
