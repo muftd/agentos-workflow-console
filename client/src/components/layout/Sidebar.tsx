@@ -81,12 +81,12 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Menu trigger button */}
+      {/* Menu trigger button - highly visible */}
       <Button
-        variant="ghost"
+        variant="default"
         size="icon"
         onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-40"
+        className="fixed top-4 left-4 z-50 shadow-lg"
         aria-label="Toggle sessions sidebar"
       >
         <Menu className="w-5 h-5" />

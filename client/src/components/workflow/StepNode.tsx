@@ -1,16 +1,11 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Edit, Trash2 } from "lucide-react";
 import type { Step } from "@/types/workflow";
 
 interface StepNodeProps {
   step: Step;
   isSelected: boolean;
-  isEditMode?: boolean;
   onSelect: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
 }
 
 /**
@@ -42,15 +37,17 @@ function getActorColor(actor: string): string {
   return 'bg-gradient-to-br from-gray-500 to-gray-600 text-white border-gray-400/20';
 }
 
-export function StepNode({ step, isSelected, isEditMode, onSelect, onEdit, onDelete }: StepNodeProps) {
+export function StepNode({ step, isSelected, onSelect }: StepNodeProps) {
   return (
-    <div
+    <button
+      onClick={onSelect}
       className={cn(
         // Base styles - increased size and padding
         "w-80 h-48 p-6",
         "bg-card border-2 rounded-lg",
         "shadow-card",
         "transition-all duration-300 ease-out",
+        "cursor-pointer",
         "text-left",
         "flex flex-col justify-between",
         "relative overflow-hidden",
@@ -66,12 +63,13 @@ export function StepNode({ step, isSelected, isEditMode, onSelect, onEdit, onDel
         ],
 
         // Hover state - lift + scale + shadow
-        !isEditMode && "cursor-pointer hover:shadow-card-hover hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02]",
+        "hover:shadow-card-hover hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02]",
+
+        // Focus accessibility
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       )}
-      onClick={!isEditMode ? onSelect : undefined}
-      role={!isEditMode ? "button" : undefined}
-      aria-label={!isEditMode ? `Step ${step.order}: ${step.actor} - ${step.output_label}` : undefined}
-      aria-pressed={!isEditMode ? isSelected : undefined}
+      aria-label={`Step ${step.order}: ${step.actor} - ${step.output_label}`}
+      aria-pressed={isSelected}
     >
       {/* Top: order + actor badge */}
       <div className="flex items-center justify-between mb-3">
@@ -107,40 +105,6 @@ export function StepNode({ step, isSelected, isEditMode, onSelect, onEdit, onDel
       >
         {step.output_label}
       </p>
-
-      {/* Edit mode action buttons */}
-      {isEditMode && (
-        <div className="absolute bottom-2 right-2 flex gap-2">
-          {onEdit && (
-            <Button
-              variant="secondary"
-              size="icon"
-              className="h-8 w-8 shadow-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-              aria-label="Edit step"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-          )}
-          {onDelete && (
-            <Button
-              variant="destructive"
-              size="icon"
-              className="h-8 w-8 shadow-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              aria-label="Delete step"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
+    </button>
   );
 }

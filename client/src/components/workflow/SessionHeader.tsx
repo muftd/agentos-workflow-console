@@ -1,13 +1,10 @@
-import { Clock, Edit2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Clock } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface SessionHeaderProps {
   title: string;
   createdAt: string;
   description?: string;
-  isEditMode?: boolean;
-  onToggleEditMode?: () => void;
 }
 
 /**
@@ -24,32 +21,13 @@ function formatDate(isoString: string): string {
   }).format(date);
 }
 
-export function SessionHeader({
-  title,
-  createdAt,
-  description,
-  isEditMode,
-  onToggleEditMode
-}: SessionHeaderProps) {
+export function SessionHeader({ title, createdAt, description }: SessionHeaderProps) {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-background/90 border-b border-border shadow-sm">
       <div className="container max-w-7xl mx-auto px-6 md:px-8 py-5 md:py-7">
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-            {title}
-          </h1>
-          {onToggleEditMode && (
-            <Button
-              variant={isEditMode ? "default" : "outline"}
-              size="sm"
-              onClick={onToggleEditMode}
-              className="shrink-0"
-            >
-              <Edit2 className="w-4 h-4 mr-2" />
-              {isEditMode ? "Done" : "Edit"}
-            </Button>
-          )}
-        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+          {title}
+        </h1>
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-3">
           <time className="text-sm text-foreground/60 inline-flex items-center gap-2 shrink-0 font-medium">
             <Clock className="w-4 h-4 text-primary" />

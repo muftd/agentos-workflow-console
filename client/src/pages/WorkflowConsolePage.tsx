@@ -18,7 +18,7 @@ import { StepFormDialog } from "@/components/workflow/StepFormDialog";
 import type { Step } from "@/types/workflow";
 
 export function WorkflowConsolePage() {
-  const { state, toggleEditMode, addStep, updateStep, deleteStep } = useApp();
+  const { state, addStep, updateStep, deleteStep } = useApp();
   const currentSession = useCurrentSession();
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
 
@@ -155,21 +155,20 @@ export function WorkflowConsolePage() {
             title={currentSession.title}
             createdAt={currentSession.created_at}
             description={currentSession.description}
-            isEditMode={state.isEditMode}
-            onToggleEditMode={toggleEditMode}
           />
 
           <FlowMap
             steps={currentSession.steps}
             selectedStepId={selectedStepId}
-            isEditMode={state.isEditMode}
             onSelectStep={setSelectedStepId}
-            onEditStep={handleEditStep}
-            onDeleteStep={handleDeleteStep}
             onAddStep={handleAddStep}
           />
 
-          <StepDetailPanel step={selectedStep} />
+          <StepDetailPanel
+            step={selectedStep}
+            onEdit={selectedStep ? () => handleEditStep(selectedStep) : undefined}
+            onDelete={selectedStep ? () => handleDeleteStep(selectedStep) : undefined}
+          />
         </>
       )}
 

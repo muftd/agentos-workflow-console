@@ -6,20 +6,14 @@ import type { Step } from "@/types/workflow";
 interface FlowMapProps {
   steps: Step[];
   selectedStepId: string | null;
-  isEditMode?: boolean;
   onSelectStep: (stepId: string) => void;
-  onEditStep?: (step: Step) => void;
-  onDeleteStep?: (step: Step) => void;
   onAddStep?: () => void;
 }
 
 export function FlowMap({
   steps,
   selectedStepId,
-  isEditMode,
   onSelectStep,
-  onEditStep,
-  onDeleteStep,
   onAddStep
 }: FlowMapProps) {
   // Sort steps by order
@@ -37,10 +31,7 @@ export function FlowMap({
               <StepNode
                 step={step}
                 isSelected={step.id === selectedStepId}
-                isEditMode={isEditMode}
                 onSelect={() => onSelectStep(step.id)}
-                onEdit={onEditStep ? () => onEditStep(step) : undefined}
-                onDelete={onDeleteStep ? () => onDeleteStep(step) : undefined}
               />
               {index < sortedSteps.length - 1 && (
                 <ArrowRight
@@ -52,8 +43,8 @@ export function FlowMap({
             </div>
           ))}
 
-          {/* Add Step button in edit mode */}
-          {isEditMode && onAddStep && (
+          {/* Add Step button - always visible */}
+          {onAddStep && (
             <>
               {sortedSteps.length > 0 && (
                 <ArrowRight
