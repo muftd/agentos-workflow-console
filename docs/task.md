@@ -460,3 +460,263 @@ hover 维度:  1 个 → 4 个
 - [ ] 用户验收测试
 - [ ] 收集反馈
 - [ ] 规划 v0.3（如需要）
+
+## 10. Replit 部署测试与问题修复
+
+> **状态**: ✅ 所有 P0 问题已修复 (2025-11-18)
+
+### 10.1 部署准备
+
+- [x] 同步 v0.2 代码到 Replit
+- [x] 安装依赖 `cd client && npm install`
+  - **问题**: 缺少 @radix-ui/react-label
+  - **解决**: npm install 自动安装所有依赖
+- [x] 运行构建测试
+  - [x] TypeScript 类型检查通过
+  - [x] 生产构建成功
+
+### 10.2 用户验收测试 (第一轮)
+
+**测试环境**: Replit Preview
+**测试时间**: 2025-11-18
+
+**测试结果**:
+- ✅ 测试点 2: Step Edit/Delete 按钮位置正确
+- ✅ 测试点 3: Move Left 功能正常
+- ✅ 测试点 4: 第一个 step 的 Move Left 禁用
+- ✅ 测试点 6: Add Step 按钮始终可见
+- ✅ 测试点 7: 操作不依赖 Edit Mode
+- ❌ 测试点 1: Menu 按钮不可见 → P0 问题
+- ❌ 测试点 5: 表单背景深灰，输入看不清 → P0 问题
+
+### 10.3 P0 问题修复
+
+#### 问题 1: Menu 按钮不可见
+
+- [x] 诊断问题根源
+  - **现象**: 用户完全看不到 menu 按钮
+  - **开发者工具**: border color 为浅灰 `rgb(229, 232, 235)`
+  - **根源**: CSS 变量 `bg-primary` 未生效
+
+- [x] 实施修复 (Sidebar.tsx)
+  - 改用明确的 Tailwind 颜色
+  - `!bg-blue-600 hover:!bg-blue-700`
+  - `!text-white border-2 !border-blue-700`
+  - 使用 `!` 前缀强制覆盖
+
+- [x] 测试验证
+  - [x] 本地构建通过
+  - [x] 视觉确认蓝色按钮醒目
+  - [ ] 用户 Replit 环境验证（待确认）
+
+**完成时间**: 2025-11-18
+**Git Commit**: cd38865 (part 1)
+
+#### 问题 2: Step 表单 UI 严重问题
+
+**子问题 2.1: 表单背景深灰/黑色**
+
+- [x] 诊断问题根源
+  - **现象**: 背景深灰 (0-0-0-0.8)，输入框看不清
+  - **根源**: Dialog Portal 中 CSS 变量继承失效
+
+- [x] 实施修复
+  - DialogContent 和所有容器: `!bg-white dark:!bg-gray-900`
+  - Input: `bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`
+  - Textarea: 同 Input
+  - Label: `text-gray-900 dark:text-gray-100`
+  - Section 标题: `text-gray-700 dark:text-gray-300`
+  - 边框: `border-gray-200 dark:border-gray-700`
+
+- [x] 修改文件
+  - [x] StepFormDialog.tsx (5 处)
+  - [x] input.tsx
+  - [x] textarea.tsx
+  - [x] label.tsx
+
+**完成时间**: 2025-11-18
+**Git Commit**: cd38865 (part 2)
+
+**子问题 2.2: 表单布局和 UX 改进**
+
+- [x] 固定 Header/Footer，内容区滚动
+  - DialogContent: `flex flex-col gap-0 p-0`
+  - 内容区: `flex-1 overflow-y-auto`
+  - Header/Footer: `shrink-0`
+
+- [x] 字段分组与布局
+  - [x] 添加"基本信息"和"流程信息" section
+  - [x] Actor & Tool 并排显示（2列）
+  - [x] 对话框宽度：600px → 700px
+
+- [x] 增强错误显示
+  - [x] 错误图标：⚠
+  - [x] 红色边框：`border-destructive`
+  - [x] 更明显的错误样式
+
+- [x] 完善字段说明
+  - [x] 所有主要字段添加 help text
+  - [x] 更清晰的 placeholder
+
+- [x] 统一必填标记
+  - [x] 红色 * 在 Label 外侧
+  - [x] 使用 flex 布局
+
+- [x] 更清晰的按钮文字
+  - [x] "Create Step" / "Save Changes"
+
+**完成时间**: 2025-11-18
+**Git Commit**: 5800397
+
+#### 问题 3: Step 操作设计缺陷
+
+**子问题 3.1: Edit Mode 反模式**
+
+- [x] 移除 isEditMode 状态依赖
+  - [x] WorkflowConsolePage: 移除 toggleEditMode
+  - [x] SessionHeader: 移除 Edit/Done 切换按钮
+  - [x] FlowMap: 移除 isEditMode prop
+  - [x] StepNode: 移除 isEditMode 逻辑
+
+- [x] Add Step 按钮始终可见
+  - [x] FlowMap 末尾始终显示
+
+**子问题 3.2: 操作位置错误**
+
+- [x] 从 StepNode 移除 Edit/Delete 按钮
+  - [x] 恢复 StepNode 到 v0.1 简洁设计
+  - [x] 移除所有 edit mode 相关代码
+
+- [x] 在 StepDetailPanel 添加 Edit/Delete 按钮
+  - [x] 添加 onEdit, onDelete props
+  - [x] 按钮在标题右侧
+  - [x] 只在 step 选中时显示
+
+- [x] WorkflowConsolePage 连接回调
+  - [x] handleEditStep, handleDeleteStep
+  - [x] 传递给 StepDetailPanel
+
+**完成时间**: 2025-11-18
+**Git Commit**: d4bc558
+
+#### 问题 4: Step 重排序功能缺失
+
+**需求理解**:
+- [x] 确认需求："session 编辑 = 调整 step 顺序"
+- [x] 设计极简方案："Move Left"单向移动
+
+**实现步骤**:
+- [x] WorkflowStorage 添加 moveStepLeft() 方法
+  - [x] 交换当前 step 与前一个 step 的 order 值
+  - [x] 保存到 LocalStorage
+
+- [x] AppContext 添加状态管理
+  - [x] 新增 MOVE_STEP_LEFT action type
+  - [x] Reducer 实现 order 交换逻辑
+  - [x] 新增 moveStepLeft() helper 函数
+
+- [x] StepDetailPanel 添加 UI
+  - [x] 添加 isFirstStep prop
+  - [x] 添加 onMoveLeft prop
+  - [x] Move Left 按钮（ArrowLeft 图标）
+  - [x] 第一个 step 禁用，带 tooltip
+
+- [x] WorkflowConsolePage 集成
+  - [x] 计算 isFirstStep
+  - [x] handleMoveStepLeft 实现
+  - [x] 连接到 StepDetailPanel
+
+**完成时间**: 2025-11-18
+**Git Commit**: 589387e
+
+### 10.4 最终验证
+
+#### 本地验证
+
+- [x] TypeScript 类型检查
+  ```bash
+  cd client && npx tsc --noEmit
+  # ✅ 通过
+  ```
+
+- [x] 生产构建测试
+  ```bash
+  npm run build
+  # ✅ CSS: 35.19 KB, JS: 356.19 KB
+  ```
+
+- [x] 所有修改的组件功能测试
+  - [x] Menu 按钮可见性和点击
+  - [x] Sidebar 打开/关闭
+  - [x] StepDetailPanel 按钮显示
+  - [x] Step 表单打开和提交
+  - [x] Move Left 功能和禁用状态
+  - [x] Add Step 功能
+
+#### 代码质量
+
+- [x] 代码提交记录清晰
+  ```
+  cd38865 Fix: Color visibility issues
+  589387e Feat: Implement step reordering
+  5800397 Fix: Step form UI improvements
+  d4bc558 Fix: Critical P0 UX issues
+  ```
+
+- [x] 文档更新完整
+  - [x] docs/plan.md (Section 5.7)
+  - [x] docs/context.md (Section 17)
+  - [x] docs/task.md (Section 10)
+
+#### 用户验收（待确认）
+
+- [ ] Menu 按钮在 Replit 环境清晰可见
+- [ ] 表单背景白色，所有输入清晰
+- [ ] 所有 P0 功能正常工作
+
+### 10.5 经验教训记录
+
+#### 技术教训
+
+- [x] **CSS 变量在 Portal 中不可靠**
+  - 记录问题原因和解决方案
+  - 更新最佳实践文档
+
+- [x] **环境差异测试的重要性**
+  - 本地正常 ≠ 生产环境正常
+  - 需要在目标环境测试关键 UI
+
+- [x] **Tailwind v4 的局限性**
+  - CSS 变量系统在某些场景下不稳定
+  - 关键组件应混合使用明确颜色
+
+#### UX 教训
+
+- [x] **避免 Mode-dependent 操作模式**
+  - Edit Mode 是反模式
+  - 操作应该上下文相关，而非模式相关
+
+- [x] **操作按钮应靠近数据**
+  - 详情面板的操作在详情面板中
+  - 不要分散在卡片上
+
+- [x] **需求理解需要具体示例**
+  - 抽象概念容易误解
+  - 需要用户提供具体场景确认
+
+#### 流程教训
+
+- [x] **用户实际测试的价值**
+  - Claude Code 无法模拟真实环境
+  - 第一次用户测试发现 4 个 P0 问题
+
+- [x] **分阶段修复的有效性**
+  - 每个 commit 聚焦单一问题域
+  - 便于测试和问题追踪
+
+### 10.6 后续行动
+
+- [ ] 用户在 Replit 验证所有修复
+- [ ] 收集进一步反馈
+- [ ] 规划 v0.3（如有需要）
+- [ ] 考虑添加更多 step 重排序选项（向右移动、拖拽）
