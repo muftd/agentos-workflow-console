@@ -63,10 +63,10 @@ export function WorkflowConsolePage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Loading workflow...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-primary mx-auto"></div>
+          <p className="text-foreground/60 font-medium">Loading workflow...</p>
         </div>
       </div>
     );
@@ -75,11 +75,11 @@ export function WorkflowConsolePage() {
   // Error state
   if (error || !session) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md">
-          <div className="text-4xl">⚠️</div>
-          <h2 className="text-xl font-semibold">Failed to Load Workflow</h2>
-          <p className="text-sm text-muted-foreground">
+          <div className="text-5xl">⚠️</div>
+          <h2 className="text-xl font-bold text-foreground">Failed to Load Workflow</h2>
+          <p className="text-sm text-foreground/60 leading-relaxed">
             {error || 'No data available'}
           </p>
         </div>
@@ -91,7 +91,7 @@ export function WorkflowConsolePage() {
   const selectedStep = session.steps.find((s) => s.id === selectedStepId);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
       <SessionHeader
         title={session.title}
         createdAt={session.created_at}
