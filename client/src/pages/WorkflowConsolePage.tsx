@@ -114,59 +114,64 @@ export function WorkflowConsolePage() {
     }
   };
 
-  // Loading state
-  if (state.isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-primary mx-auto"></div>
-          <p className="text-foreground/60 font-medium">Loading workflow...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // No session state
-  if (!currentSession) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
-        <div className="text-center space-y-4 max-w-md">
-          <div className="text-5xl">📋</div>
-          <h2 className="text-xl font-bold text-foreground">No Workflow Selected</h2>
-          <p className="text-sm text-foreground/60 leading-relaxed">
-            Please select or create a workflow to get started.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Find selected step
-  const selectedStep = currentSession.steps.find((s) => s.id === selectedStepId);
+  // Find selected step (only when session exists)
+  const selectedStep = currentSession?.steps.find((s) => s.id === selectedStepId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
+      {/* Sidebar is always rendered to allow session creation/selection */}
       <Sidebar />
 
-      <SessionHeader
-        title={currentSession.title}
-        createdAt={currentSession.created_at}
-        description={currentSession.description}
-        isEditMode={state.isEditMode}
-        onToggleEditMode={toggleEditMode}
-      />
+      {/* Loading state */}
+      {state.isLoading && (
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-primary mx-auto"></div>
+            <p className="text-foreground/60 font-medium">Loading workflow...</p>
+          </div>
+        </div>
+      )}
 
-      <FlowMap
-        steps={currentSession.steps}
-        selectedStepId={selectedStepId}
-        isEditMode={state.isEditMode}
-        onSelectStep={setSelectedStepId}
-        onEditStep={handleEditStep}
-        onDeleteStep={handleDeleteStep}
-        onAddStep={handleAddStep}
-      />
+      {/* No session state */}
+      {!state.isLoading && !currentSession && (
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
+          <div className="text-center space-y-4 max-w-md px-6">
+            <div className="text-5xl">📋</div>
+            <h2 className="text-xl font-bold text-foreground">No Workflow Selected</h2>
+            <p className="text-sm text-foreground/60 leading-relaxed">
+              Please select or create a workflow to get started.
+            </p>
+            <p className="text-xs text-foreground/40 leading-relaxed">
+              Click the menu button in the top-left corner to open the session list.
+            </p>
+          </div>
+        </div>
+      )}
 
-      <StepDetailPanel step={selectedStep} />
+      {/* Session content */}
+      {!state.isLoading && currentSession && (
+        <>
+          <SessionHeader
+            title={currentSession.title}
+            createdAt={currentSession.created_at}
+            description={currentSession.description}
+            isEditMode={state.isEditMode}
+            onToggleEditMode={toggleEditMode}
+          />
+
+          <FlowMap
+            steps={currentSession.steps}
+            selectedStepId={selectedStepId}
+            isEditMode={state.isEditMode}
+            onSelectStep={setSelectedStepId}
+            onEditStep={handleEditStep}
+            onDeleteStep={handleDeleteStep}
+            onAddStep={handleAddStep}
+          />
+
+          <StepDetailPanel step={selectedStep} />
+        </>
+      )}
 
       {/* Step Form Dialog */}
       <StepFormDialog
