@@ -25,6 +25,7 @@ type Action =
   | { type: 'ADD_STEP'; payload: { sessionId: string; step: Step } }
   | { type: 'UPDATE_STEP'; payload: { sessionId: string; stepId: string; data: Partial<Step> } }
   | { type: 'DELETE_STEP'; payload: { sessionId: string; stepId: string } }
+  | { type: 'MOVE_STEP_LEFT'; payload: { sessionId: string; stepId: string } }
   | { type: 'TOGGLE_EDIT_MODE' }
   | { type: 'TOGGLE_SIDEBAR' }
   | { type: 'SET_LOADING'; payload: boolean };
@@ -112,6 +113,28 @@ function appReducer(state: AppState, action: Action): AppState {
       return { ...state, sessions };
     }
 
+    case 'MOVE_STEP_LEFT': {
+      const sessions = state.sessions.map(session => {
+        if (session.session_id !== action.payload.sessionId) return session;
+
+        const steps = [...session.steps].sort((a, b) => a.order - b.order);
+        const currentIndex = steps.findIndex(s => s.id === action.payload.stepId);
+
+        // Can't move left if it's the first step
+        if (currentIndex <= 0) return session;
+
+        // Swap order values with previous step
+        const currentStep = steps[currentIndex];
+        const previousStep = steps[currentIndex - 1];
+        const tempOrder = currentStep.order;
+        currentStep.order = previousStep.order;
+        previousStep.order = tempOrder;
+
+        return { ...session, steps };
+      });
+      return { ...state, sessions };
+    }
+
     case 'TOGGLE_EDIT_MODE':
       return { ...state, isEditMode: !state.isEditMode };
 
@@ -143,6 +166,7 @@ interface AppContextValue {
   addStep: (sessionId: string, step: Omit<Step, 'id' | 'order' | 'timestamp'>) => Promise<void>;
   updateStep: (sessionId: string, stepId: string, data: Partial<Step>) => Promise<void>;
   deleteStep: (sessionId: string, stepId: string) => Promise<void>;
+  moveStepLeft: (sessionId: string, stepId: string) => Promise<void>;
 
   toggleEditMode: () => void;
   toggleSidebar: () => void;
@@ -246,6 +270,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'DELETE_STEP', payload: { sessionId, stepId } });
   }, []);
 
+  const moveStepLeft = useCallback(async (sessionId: string, stepId: string) => {
+    // Update storage first (swap order values)
+    WorkflowStorage.moveStepLeft(sessionId, stepId);
+    // Then update state
+    dispatch({ type: 'MOVE_STEP_LEFT', payload: { sessionId, stepId } });
+  }, []);
+
   const toggleEditMode = useCallback(() => {
     dispatch({ type: 'TOGGLE_EDIT_MODE' });
   }, []);
@@ -265,6 +296,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addStep,
     updateStep,
     deleteStep,
+    moveStepLeft,
     toggleEditMode,
     toggleSidebar,
   };

@@ -267,6 +267,32 @@ export class WorkflowStorage {
   }
 
   /**
+   * 向左移动step（顺序前移1格）
+   */
+  static moveStepLeft(sessionId: string, stepId: string): void {
+    const data = this.load();
+    if (!data) throw new Error('Storage not initialized');
+
+    const session = data.sessions.find(s => s.session_id === sessionId);
+    if (!session) throw new Error(`Session ${sessionId} not found`);
+
+    const sortedSteps = [...session.steps].sort((a, b) => a.order - b.order);
+    const currentIndex = sortedSteps.findIndex(s => s.id === stepId);
+
+    // 如果已是第一个step，无法继续前移
+    if (currentIndex <= 0) return;
+
+    // 交换当前step和前一个step的order值
+    const currentStep = sortedSteps[currentIndex];
+    const previousStep = sortedSteps[currentIndex - 1];
+    const tempOrder = currentStep.order;
+    currentStep.order = previousStep.order;
+    previousStep.order = tempOrder;
+
+    this.save(data);
+  }
+
+  /**
    * 初始化存储（从静态JSON迁移）
    */
   static async initialize(): Promise<void> {
