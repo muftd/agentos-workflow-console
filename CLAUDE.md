@@ -159,3 +159,191 @@ See `specs/mvp-v0.1-spec.md:114-118` for detailed extension hooks.
 4. **Stage 4**: Visual polish & deployment (styling + Replit setup)
 
 Success criteria: Load `workflow-log-sample.json`, render clickable flow timeline, display step details on click, deploy on public Replit URL.
+
+---
+
+## 🔧 Technical Stack & Critical Configurations
+
+### Tailwind CSS v4 (IMPORTANT!)
+
+**⚠️ The project uses Tailwind CSS v4 - DO NOT downgrade to v3**
+
+Vite template installs Tailwind v4 intentionally. Key differences from v3:
+
+```typescript
+// ✅ CORRECT (v4 configuration)
+// vite.config.ts
+import tailwindcss from '@tailwindcss/vite'
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+
+// src/index.css
+@import "tailwindcss";
+
+// NO postcss.config.js needed!
+```
+
+```typescript
+// ❌ WRONG (v3 syntax - do not use)
+// postcss.config.js
+export default {
+  plugins: { tailwindcss: {} }
+}
+
+// src/index.css
+@tailwind base;
+@tailwind components;
+```
+
+**If you encounter Tailwind errors:**
+1. ✅ Check official Tailwind v4 documentation first
+2. ✅ Verify you're using `@tailwindcss/vite` plugin
+3. ✅ Ensure `@import "tailwindcss"` in CSS
+4. ❌ DO NOT downgrade to v3 without research
+
+### Vite Configuration for Replit
+
+**Required server configuration:**
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  server: {
+    host: '0.0.0.0',        // Listen on all interfaces
+    port: 5000,             // Fixed port for Replit
+    strictPort: true,       // Fail if port unavailable
+    allowedHosts: true,     // CRITICAL for Replit preview
+  },
+})
+```
+
+**Why `allowedHosts: true` is critical:**
+- Replit uses dynamic hostnames for preview
+- Without this, Vite blocks requests with "Invalid Host header"
+- This is a deployment requirement, not a security issue
+
+---
+
+## ✅ Development & Deployment Best Practices
+
+### Pre-Deployment Testing Checklist
+
+**Before deploying to Replit, Claude Code MUST complete:**
+
+```bash
+# 1. Production Build Test
+cd client
+npm run build
+# ✅ Verify: Build succeeds without errors
+
+# 2. Preview Server Test
+npm run preview
+# ✅ Verify: Opens on http://localhost:4173
+# ✅ Verify: All features work (click, keyboard nav)
+
+# 3. Development Server Test
+npm run dev
+# ✅ Verify: Opens on configured port (5000)
+# ✅ Verify: Hot reload works
+# ✅ Check browser console for errors
+
+# 4. Visual Verification
+# ✅ Test all interactions (click nodes, arrow keys)
+# ✅ Check responsive layout (mobile/desktop)
+# ✅ Verify all data loads correctly
+```
+
+### Configuration Verification
+
+Before deployment, verify these files:
+
+```bash
+# 1. Check Vite config includes Replit settings
+cat client/vite.config.ts | grep -A 5 "server:"
+# Should show: host: '0.0.0.0', allowedHosts: true
+
+# 2. Check Tailwind v4 setup
+cat client/package.json | grep tailwindcss
+# Should show: "tailwindcss": "^4.x.x"
+cat client/src/index.css | head -1
+# Should show: @import "tailwindcss";
+
+# 3. Verify no PostCSS config exists
+ls client/postcss.config.js 2>/dev/null
+# Should error: No such file
+
+# 4. Check .replit workflow exists
+cat .replit | grep -A 3 "Development Server"
+# Should show proper workflow configuration
+```
+
+### Error Handling Protocol
+
+**When encountering build/runtime errors:**
+
+1. ❌ **DO NOT** immediately downgrade dependencies
+2. ✅ **DO** check official documentation first
+3. ✅ **DO** search GitHub Issues / Stack Overflow
+4. ✅ **DO** verify configuration files
+5. ✅ **DO** test in clean environment if needed
+
+**Only downgrade if:**
+- Confirmed breaking bug in latest version
+- Official recommendation from maintainers
+- No workaround available
+
+### Cost-Effective Deployment Strategy
+
+**Goal:** Claude Code handles all development; Replit only for hosting
+
+**Workflow:**
+```
+1. Claude Code: Full development + testing
+   ├── Write all code
+   ├── Complete testing checklist
+   └── Verify builds locally
+
+2. User: Push to Replit
+   └── Deploy to production
+
+3. If errors occur:
+   ├── User: Reports error details
+   ├── Claude: Diagnoses remotely
+   └── Claude: Pushes fixes
+```
+
+**Avoid:** Replit Agent modifying code (expensive & loses context)
+
+---
+
+## 📋 Development Milestones
+
+### v0.1 Completed ✅
+- **Iteration 001**: Project foundation & design system
+- **Iteration 002**: Core visualization components
+- **Iteration 003**: Visual polish & deployment prep
+- **Deployment**: Successfully deployed on Replit
+
+**Key Stats:**
+- 📦 22 files created
+- 💻 ~2,500 lines of code
+- 🎨 5 core components
+- 📚 Complete documentation
+- ⏱️ Development time: ~4 hours
+
+**Lessons Learned:**
+1. **Technology Selection**: Always verify new framework versions
+2. **Testing Coverage**: Test build + preview + dev server
+3. **Deployment Config**: Set up Replit config during development
+4. **Documentation**: Record technical decisions immediately
+
+**Experience Summary:**
+- ✅ Design system implementation: Excellent
+- ✅ Component architecture: Clean and maintainable
+- ⚠️ Initial deployment: Required Tailwind v4 fixes
+- ✅ Final result: Production-ready application
+
+---
+
+Success criteria: Load `workflow-log-sample.json`, render clickable flow timeline, display step details on click, deploy on public Replit URL.
