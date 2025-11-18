@@ -294,3 +294,450 @@ cd client && npm run dev       # ✅ 启动
 阴影层数:    1 层 → 3 层
 hover 维度:  1 个 → 4 个 (位移+缩放+阴影+边框)
 ```
+
+---
+
+# Workflow Console · Context (v0.2)
+
+> v0.2 技术架构与上下文
+>
+> **状态**: ✅ v0.2 已完成 (2025-11-18)
+>
+> **目标**: 从"静态演示"到"可编辑工具"
+
+## 9. 数据层架构 (v0.2)
+
+### 9.1 LocalStorage 封装
+
+**文件**: `client/src/lib/storage.ts` (314 行)
+
+**核心类**: WorkflowStorage
+- 单例模式，所有数据操作通过静态方法
+- 数据结构：
+  ```typescript
+  interface AppData {
+    version: '0.2';
+    sessions: WorkflowSession[];
+    currentSessionId: string | null;
+    lastUpdated: string;
+  }
+  ```
+- LocalStorage key: `'workflow-console-v0.2'`
+
+**关键方法**:
+```typescript
+// 初始化（从静态 JSON 迁移）
+static async initialize(): Promise<void>
+
+// Session CRUD
+static getSessions(): WorkflowSession[]
+static getSession(id: string): WorkflowSession | undefined
+static addSession(data: Omit<...>): string
+static updateSession(id: string, data: Partial<WorkflowSession>): void
+static deleteSession(id: string): void
+static duplicateSession(id: string): string
+
+// Step CRUD
+static addStep(sessionId: string, step: Omit<...>): string
+static updateStep(sessionId: string, stepId: string, data: Partial<Step>): void
+static deleteStep(sessionId: string, stepId: string): void
+
+// 当前 session
+static getCurrentSessionId(): string | null
+static setCurrentSessionId(id: string | null): void
+```
+
+**数据版本控制**:
+- 读取时检查 `version` 字段
+- 版本不匹配时返回 null（触发重新初始化）
+- 所有写入操作自动更新 `lastUpdated`
+
+### 9.2 数据迁移策略
+
+**首次访问流程**:
+1. 检查 LocalStorage 是否存在 key
+2. 如不存在，fetch `/data/workflow-log-sample.json`
+3. 包装成 AppData 结构
+4. 保存到 LocalStorage
+5. 后续访问直接读取 LocalStorage
+
+**数据持久化**:
+- 所有 CRUD 操作立即写入 LocalStorage
+- 无需手动 save 按钮
+- 刷新页面数据不丢失
+
+## 10. 状态管理架构 (v0.2)
+
+### 10.1 React Context + useReducer
+
+**文件**: `client/src/contexts/AppContext.tsx` (312 行)
+
+**全局状态**:
+```typescript
+interface AppState {
+  sessions: WorkflowSession[];        // 所有会话
+  currentSessionId: string | null;    // 当前选中
+  isEditMode: boolean;                // 编辑模式开关
+  isSidebarOpen: boolean;             // 侧边栏开关
+  isLoading: boolean;                 // 加载状态
+}
+```
+
+**Action 类型** (11 种):
+```typescript
+'SET_SESSIONS' | 'SELECT_SESSION' | 'ADD_SESSION' |
+'UPDATE_SESSION' | 'DELETE_SESSION' |
+'ADD_STEP' | 'UPDATE_STEP' | 'DELETE_STEP' |
+'TOGGLE_EDIT_MODE' | 'TOGGLE_SIDEBAR' | 'SET_LOADING'
+```
+
+### 10.2 自定义 Hooks
+
+**提供 8 个便捷 hooks**:
+```typescript
+useApp()              // 完整的 state + dispatch + helpers
+useSessions()         // sessions 数组
+useCurrentSession()   // 当前 session 对象
+useCurrentSessionId() // 当前 session ID
+useEditMode()         // isEditMode 状态
+useSidebarOpen()      // isSidebarOpen 状态
+useLoading()          // isLoading 状态
+```
+
+**helper 函数自动处理 LocalStorage**:
+```typescript
+const { selectSession, addSession, updateSession, deleteSession } = useApp();
+
+// 调用 helper 时：
+// 1. 更新 LocalStorage
+// 2. dispatch action 更新 React state
+// 3. 两者保持同步
+```
+
+### 10.3 初始化流程
+
+**AppProvider 挂载时**:
+```typescript
+useEffect(() => {
+  async function init() {
+    await WorkflowStorage.initialize();    // 确保数据存在
+    const sessions = WorkflowStorage.getSessions();
+    const currentId = WorkflowStorage.getCurrentSessionId();
+
+    dispatch({ type: 'SET_SESSIONS', payload: sessions });
+    dispatch({ type: 'SELECT_SESSION', payload: currentId });
+    dispatch({ type: 'SET_LOADING', payload: false });
+  }
+  init();
+}, []);
+```
+
+## 11. UI 架构 (v0.2)
+
+### 11.1 组件层级结构
+
+```
+App.tsx
+└── AppProvider (全局状态)
+    └── WorkflowConsolePage
+        ├── Sidebar (始终渲染)
+        │   ├── Menu Button (z-40, fixed)
+        │   └── Sheet (左侧抽屉)
+        │       ├── "New Session" Button
+        │       └── SessionList
+        │           └── SessionListItem (多个)
+        │               ├── 会话信息
+        │               └── DropdownMenu (Edit/Duplicate/Delete)
+        │
+        ├── [Loading State] (条件渲染)
+        ├── [Empty State] (条件渲染)
+        │
+        └── [Session Content] (条件渲染)
+            ├── SessionHeader
+            │   ├── Title
+            │   └── Edit/Done Toggle
+            ├── FlowMap
+            │   ├── StepNode (多个)
+            │   │   └── Edit/Delete Buttons (编辑模式)
+            │   └── "Add Step" Button (编辑模式)
+            └── StepDetailPanel
+
+        // 弹窗（始终渲染，通过 state 控制显示）
+        ├── SessionFormDialog
+        ├── StepFormDialog
+        └── AlertDialog (删除确认)
+```
+
+### 11.2 条件渲染逻辑
+
+**WorkflowConsolePage 渲染策略**:
+```typescript
+return (
+  <div>
+    <Sidebar />  {/* 始终渲染 - 关键！*/}
+
+    {state.isLoading && <LoadingSpinner />}
+
+    {!state.isLoading && !currentSession && (
+      <EmptyState message="..." />
+    )}
+
+    {!state.isLoading && currentSession && (
+      <>
+        <SessionHeader />
+        <FlowMap />
+        <StepDetailPanel />
+      </>
+    )}
+
+    {/* Dialogs - 始终渲染，通过 open prop 控制 */}
+    <SessionFormDialog />
+    <StepFormDialog />
+    <AlertDialog />
+  </div>
+);
+```
+
+**关键设计决策**:
+- Sidebar **必须始终渲染**，避免无 session 时 UI 死锁
+- 使用条件渲染而非提前 return
+- Dialog 始终渲染，通过 open 状态控制显示
+
+### 11.3 编辑模式 UI 状态
+
+**Normal Mode** (isEditMode = false):
+- StepNode: 可点击，显示 hover 效果
+- FlowMap: 无 "Add Step" 按钮
+- SessionHeader: 显示 "Edit" 按钮
+
+**Edit Mode** (isEditMode = true):
+- StepNode: 不可点击，显示 Edit/Delete 按钮（右下角）
+- FlowMap: 显示 "Add Step" 占位按钮（末尾）
+- SessionHeader: 显示 "Done" 按钮（primary 变体）
+
+## 12. 新增 UI 组件 (v0.2)
+
+### 12.1 shadcn/ui 组件
+
+**Dialog 系列**:
+- `client/src/components/ui/dialog.tsx` (120 行)
+  - SessionFormDialog 和 StepFormDialog 的基础
+  - 基于 @radix-ui/react-dialog
+
+- `client/src/components/ui/alert-dialog.tsx` (139 行)
+  - 删除确认对话框
+  - 基于 @radix-ui/react-alert-dialog
+
+**Sheet (侧边栏抽屉)**:
+- `client/src/components/ui/sheet.tsx` (138 行)
+  - 支持 4 个方向（left, right, top, bottom）
+  - Sidebar 使用 side="left"
+  - 基于 @radix-ui/react-dialog
+
+**DropdownMenu (操作菜单)**:
+- `client/src/components/ui/dropdown-menu.tsx` (198 行)
+  - SessionListItem 的 Edit/Duplicate/Delete 菜单
+  - 基于 @radix-ui/react-dropdown-menu
+
+**表单组件**:
+- `input.tsx`, `label.tsx`, `textarea.tsx`
+  - 用于 SessionFormDialog 和 StepFormDialog
+  - 基于 @radix-ui/react-label
+
+### 12.2 业务组件
+
+**Session 管理**:
+- `Sidebar.tsx` (159 行)
+  - 整合 Menu Button + Sheet + SessionList
+  - 管理 SessionFormDialog 和 DeleteDialog 状态
+  - 处理所有 session CRUD 回调
+
+- `SessionList.tsx` (47 行)
+  - 映射 sessions 到 SessionListItem
+  - 空状态处理
+
+- `SessionListItem.tsx` (125 行)
+  - 会话卡片显示
+  - DropdownMenu 集成
+  - 选中状态高亮
+
+- `SessionFormDialog.tsx` (127 行)
+  - 创建/编辑模式切换
+  - 表单验证（标题必填）
+  - 重置逻辑
+
+**Step 编辑**:
+- `StepFormDialog.tsx` (236 行)
+  - 完整的 Step 字段表单
+  - 必填/可选字段验证
+  - Tags 逗号分隔输入
+  - 创建/编辑模式切换
+
+### 12.3 组件修改
+
+**StepNode.tsx**:
+- 添加 `isEditMode` prop
+- 条件渲染 Edit/Delete 按钮
+- 编辑模式下禁用 onClick 和 hover
+
+**FlowMap.tsx**:
+- 添加 `isEditMode`, `onEditStep`, `onDeleteStep`, `onAddStep` props
+- 编辑模式下显示 "Add Step" 占位按钮
+- 传递回调到 StepNode
+
+**SessionHeader.tsx**:
+- 添加 `isEditMode`, `onToggleEditMode` props
+- Edit/Done 按钮
+- 响应式布局（按钮在右侧）
+
+**WorkflowConsolePage.tsx**:
+- 完全重构为条件渲染架构
+- 集成所有 CRUD 逻辑
+- 管理 3 个 dialog 状态
+- 管理 2 个确认 dialog 状态
+
+## 13. 架构变更 (v0.2)
+
+### 13.1 数据模型变更
+
+**WorkflowSession**:
+```typescript
+// v0.1
+interface WorkflowSession {
+  description: string;  // 必填
+}
+
+// v0.2
+interface WorkflowSession {
+  description?: string;  // 可选
+}
+```
+
+**原因**: 创建新 session 时，描述可以为空
+
+### 13.2 依赖变更
+
+**新增**:
+```json
+{
+  "uuid": "^10.0.0",
+  "@types/uuid": "^10.0.0",
+  "@radix-ui/react-dialog": "latest",
+  "@radix-ui/react-alert-dialog": "latest",
+  "@radix-ui/react-dropdown-menu": "latest",
+  "@radix-ui/react-label": "latest"
+}
+```
+
+### 13.3 构建产物变化
+
+**v0.1**:
+```
+CSS: 28.26 KB (gzip: 5.39 KB)
+JS:  233.25 KB (gzip: 73.33 KB)
+```
+
+**v0.2**:
+```
+CSS: 33.78 KB (gzip: 6.52 KB)  +20% (新增 UI 组件)
+JS:  353.26 KB (gzip: 110.93 KB)  +51% (Radix UI + 业务逻辑)
+```
+
+## 14. 关键 Bug 修复 (v0.2)
+
+### 14.1 Sidebar 不可访问问题
+
+**问题**: commit `8dfaab0`
+- **症状**: 删除最后一个 session 后，UI 无法恢复
+- **原因**: `if (!currentSession) return <EmptyState />`
+  - 提前返回导致 Sidebar 未渲染
+  - 用户无法打开菜单创建新 session
+
+**修复**:
+```typescript
+// ❌ 错误做法
+if (!currentSession) return <EmptyState />;
+return <><Sidebar /><SessionContent /></>;
+
+// ✅ 正确做法
+return (
+  <>
+    <Sidebar />  {/* 始终渲染 */}
+    {!currentSession && <EmptyState />}
+    {currentSession && <SessionContent />}
+  </>
+);
+```
+
+**教训**:
+- 关键 UI 元素（如导航）必须始终可访问
+- 避免过早返回导致 UI 死锁
+- 用条件渲染替代提前 return
+
+## 15. 测试与验证 (v0.2)
+
+### 15.1 功能测试清单
+
+**Session 管理**:
+- ✅ 创建新 session
+- ✅ 编辑 session 元数据
+- ✅ 删除 session（带确认）
+- ✅ 复制 session
+- ✅ 切换 session
+- ✅ LocalStorage 持久化
+
+**Step 管理**:
+- ✅ 创建新 step
+- ✅ 编辑现有 step
+- ✅ 删除 step（带确认）
+- ✅ 自动重排序
+
+**编辑模式**:
+- ✅ Edit/Done 按钮切换
+- ✅ 编辑模式下显示操作按钮
+- ✅ 正常模式下隐藏操作按钮
+
+**边缘情况**:
+- ✅ 删除最后一个 session
+- ✅ 无 session 时打开侧边栏
+- ✅ 刷新页面数据保留
+
+### 15.2 构建测试
+
+```bash
+cd client
+
+# TypeScript 类型检查
+npx tsc --noEmit  # ✅ 通过
+
+# 生产构建
+npm run build     # ✅ 成功
+# 输出: CSS 33.78 KB, JS 353.26 KB
+
+# 预览服务器
+npm run preview   # ✅ 正常
+
+# 开发服务器
+npm run dev       # ✅ 正常
+```
+
+## 16. 部署建议 (v0.2)
+
+**Replit 配置**:
+- 无需修改 `vite.config.ts`（v0.1 配置适用）
+- 确保 `allowedHosts: true` 存在
+- 构建命令: `cd client && npm run build`
+- 启动命令: `cd client && npm run preview`
+
+**本地开发**:
+```bash
+cd client
+npm install      # 安装新增依赖
+npm run dev      # 启动开发服务器
+```
+
+**数据管理**:
+- 首次访问自动从 `/data/workflow-log-sample.json` 初始化
+- 后续数据存储在浏览器 LocalStorage
+- 清除数据: 浏览器开发者工具 → Application → Local Storage → 删除 key
+- 重置数据: 删除 LocalStorage key 后刷新页面

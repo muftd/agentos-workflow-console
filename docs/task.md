@@ -289,3 +289,174 @@ hover 维度:  1 个 → 4 个
 代码改动:    6 个文件，~250 行
 构建大小:    CSS 28.26 KB, JS 233.25 KB
 ```
+---
+
+# Workflow Console · Tasks (v0.2)
+
+> **状态**: ✅ 所有任务已完成 (2025-11-18)
+>
+> **目标**: 多 session 管理 + 完整编辑功能
+
+## 1. Stage 1: 数据层重构
+
+- [x] 设计 LocalStorage 数据结构 (AppData interface)
+- [x] 实现 WorkflowStorage 类 (`client/src/lib/storage.ts`)
+  - [x] 基础 CRUD 方法 (load, save, getSessions)
+  - [x] Session 操作 (add, update, delete, duplicate)
+  - [x] Step 操作 (add, update, delete)
+  - [x] 当前 session 管理 (get/setCurrentSessionId)
+  - [x] 数据迁移 (initialize 方法)
+- [x] 安装 uuid 依赖 (npm install uuid @types/uuid)
+- [x] 测试数据持久化（刷新页面数据保留）
+
+**完成时间**: 2025-11-18
+
+## 2. Stage 2: 状态管理重构
+
+- [x] 设计 AppState 接口（5 个状态字段）
+- [x] 实现 AppContext (`client/src/contexts/AppContext.tsx`)
+  - [x] appReducer 函数（11 种 action 类型）
+  - [x] AppProvider 组件（useReducer + useEffect 初始化）
+  - [x] Helper 函数（selectSession, addSession, etc.）
+  - [x] 8 个自定义 hooks
+- [x] 修改 App.tsx（包裹 AppProvider）
+- [x] 修改 WorkflowConsolePage.tsx（使用 context hooks）
+- [x] 测试全局状态管理（会话切换正常）
+
+**完成时间**: 2025-11-18
+
+## 3. Stage 3: Session 列表 UI
+
+- [x] 安装 @radix-ui/react-dialog 依赖
+- [x] 创建 Sheet 组件 (`client/src/components/ui/sheet.tsx`)
+- [x] 创建 SessionListItem 组件
+  - [x] 显示标题、日期、步骤数
+  - [x] 描述预览（line-clamp-2）
+  - [x] formatDate 辅助函数
+  - [x] 选中状态高亮
+- [x] 创建 SessionList 组件
+  - [x] 映射 sessions 到 SessionListItem
+  - [x] 空状态处理
+- [x] 创建 Sidebar 组件
+  - [x] 菜单按钮（固定左上角）
+  - [x] Sheet 抽屉（左侧，340px/400px）
+  - [x] 集成 SessionList
+  - [x] 使用 AppContext
+- [x] 集成到 WorkflowConsolePage
+- [x] 测试侧边栏（打开/关闭流畅）
+
+**完成时间**: 2025-11-18
+
+## 4. Stage 4: Session 编辑功能
+
+- [x] 安装 UI 组件依赖
+  - [x] @radix-ui/react-alert-dialog
+  - [x] @radix-ui/react-dropdown-menu
+  - [x] @radix-ui/react-label
+- [x] 创建基础 UI 组件
+  - [x] dialog.tsx
+  - [x] alert-dialog.tsx
+  - [x] dropdown-menu.tsx
+  - [x] input.tsx
+  - [x] label.tsx
+  - [x] textarea.tsx
+- [x] 创建 SessionFormDialog 组件
+  - [x] 创建/编辑模式切换
+  - [x] 标题 + 描述表单
+  - [x] 表单验证（标题必填）
+  - [x] 重置逻辑
+- [x] 修改 SessionListItem
+  - [x] 添加 DropdownMenu（Edit, Duplicate, Delete）
+  - [x] 操作菜单在右上角
+  - [x] stopPropagation 防止触发选中
+- [x] 修改 SessionList（传递编辑回调）
+- [x] 修改 Sidebar
+  - [x] "New Session" 按钮
+  - [x] 管理 SessionFormDialog 状态
+  - [x] 管理删除确认对话框
+  - [x] 处理所有 CRUD 操作
+- [x] 测试完整 Session CRUD 功能
+
+**完成时间**: 2025-11-18
+**Git Commit**: 28c090d
+
+## 5. Stage 5: Step 编辑功能
+
+- [x] 创建 StepFormDialog 组件
+  - [x] 完整字段表单（Actor*, Tool*, Skill, Input*, Output*, Summary, Tags）
+  - [x] 必填字段验证
+  - [x] Tags 逗号分隔输入
+  - [x] 创建/编辑模式切换
+- [x] 修改 StepNode
+  - [x] 添加 isEditMode prop
+  - [x] 条件渲染 Edit/Delete 按钮（右下角）
+  - [x] 编辑模式下禁用 hover 和点击
+- [x] 修改 FlowMap
+  - [x] 添加 isEditMode, onEditStep, onDeleteStep, onAddStep props
+  - [x] 编辑模式显示 "Add Step" 占位按钮
+  - [x] 传递回调到 StepNode
+- [x] 修改 SessionHeader
+  - [x] 添加 Edit/Done 切换按钮
+  - [x] 响应式布局
+- [x] 修改 WorkflowConsolePage
+  - [x] 集成 StepFormDialog
+  - [x] 管理 step form 状态
+  - [x] 管理 step 删除确认
+  - [x] 处理所有 Step CRUD 操作
+- [x] 修改 WorkflowSession 类型（description → 可选）
+- [x] 测试完整 Step CRUD 功能
+
+**完成时间**: 2025-11-18
+**Git Commit**: 3d24b31
+
+## 6. Stage 6: Bug 修复与优化
+
+- [x] 修复 Sidebar 不可访问问题
+  - [x] 问题：删除最后一个 session 后 UI 死锁
+  - [x] 原因：提前 return 导致 Sidebar 未渲染
+  - [x] 方案：Sidebar 始终渲染，主内容条件渲染
+  - [x] 添加空状态提示文案
+- [x] 改进 selectedStep 查找（使用可选链）
+- [x] 统一条件渲染逻辑
+- [x] TypeScript 类型检查
+- [x] 生产构建测试
+
+**完成时间**: 2025-11-18
+**Git Commit**: 8dfaab0
+
+## 7. 文档更新
+
+- [x] 更新 docs/plan.md（添加 v0.2 部分）
+- [x] 更新 docs/context.md（添加 v0.2 技术架构）
+- [x] 更新 docs/task.md（本文档）
+- [ ] 考虑更新 v0.2-plan.md 状态（改为"已完成"）
+
+**完成时间**: 2025-11-18
+
+## 8. 成功标准验证
+
+- [x] 功能完整性
+  - [x] 多 session 管理（列表、切换、排序）
+  - [x] Session CRUD（创建、编辑、删除、复制）
+  - [x] Step CRUD（创建、编辑、删除）
+  - [x] LocalStorage 持久化
+  - [x] 编辑模式切换
+- [x] 边缘情况处理
+  - [x] 删除最后一个 session 可恢复
+  - [x] 无 session 时 UI 可用
+  - [x] 刷新页面数据保留
+- [x] 代码质量
+  - [x] TypeScript 类型安全
+  - [x] 无构建错误
+  - [x] 生产构建成功
+- [x] 部署就绪
+  - [x] Vite 配置完整
+  - [x] 所有依赖已安装
+  - [x] 文档已更新
+
+## 9. 下一步行动
+
+- [ ] 部署 v0.2 到 Replit
+- [ ] 用户验收测试
+- [ ] 收集反馈
+- [ ] 规划 v0.3（如需要）
