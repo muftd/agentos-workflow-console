@@ -128,18 +128,18 @@ export function StepFormDialog({
                   <div className="grid gap-2">
                     <Label htmlFor="actor" className="flex items-center gap-1">
                       Actor
-                      <span className="text-destructive text-base">*</span>
+                      <span className="text-red-600 dark:text-red-400 text-base">*</span>
                     </Label>
                     <Input
                       id="actor"
                       placeholder="Coach C, Claude Code, etc."
                       value={actor}
                       onChange={(e) => setActor(e.target.value)}
-                      className={errors.actor ? "border-destructive" : ""}
+                      className={errors.actor ? "border-red-600 dark:border-red-400" : ""}
                       autoFocus
                     />
                     {errors.actor && (
-                      <p className="text-xs text-destructive flex items-center gap-1">
+                      <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                         <span className="font-semibold">⚠</span> {errors.actor}
                       </p>
                     )}
@@ -148,17 +148,17 @@ export function StepFormDialog({
                   <div className="grid gap-2">
                     <Label htmlFor="tool" className="flex items-center gap-1">
                       Tool
-                      <span className="text-destructive text-base">*</span>
+                      <span className="text-red-600 dark:text-red-400 text-base">*</span>
                     </Label>
                     <Input
                       id="tool"
                       placeholder="Claude Code, ChatGPT, etc."
                       value={tool}
                       onChange={(e) => setTool(e.target.value)}
-                      className={errors.tool ? "border-destructive" : ""}
+                      className={errors.tool ? "border-red-600 dark:border-red-400" : ""}
                     />
                     {errors.tool && (
-                      <p className="text-xs text-destructive flex items-center gap-1">
+                      <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                         <span className="font-semibold">⚠</span> {errors.tool}
                       </p>
                     )}
@@ -174,7 +174,7 @@ export function StepFormDialog({
                     value={skill}
                     onChange={(e) => setSkill(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     The workflow skill or capability being executed
                   </p>
                 </div>
@@ -190,21 +190,21 @@ export function StepFormDialog({
                 <div className="grid gap-2">
                   <Label htmlFor="input_label" className="flex items-center gap-1">
                     Input Label
-                    <span className="text-destructive text-base">*</span>
+                    <span className="text-red-600 dark:text-red-400 text-base">*</span>
                   </Label>
                   <Input
                     id="input_label"
                     placeholder="What this step receives as input"
                     value={inputLabel}
                     onChange={(e) => setInputLabel(e.target.value)}
-                    className={errors.inputLabel ? "border-destructive" : ""}
+                    className={errors.inputLabel ? "border-red-600 dark:border-red-400" : ""}
                   />
                   {errors.inputLabel && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
+                    <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                       <span className="font-semibold">⚠</span> {errors.inputLabel}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     Brief description of what this step receives
                   </p>
                 </div>
@@ -213,21 +213,21 @@ export function StepFormDialog({
                 <div className="grid gap-2">
                   <Label htmlFor="output_label" className="flex items-center gap-1">
                     Output Label
-                    <span className="text-destructive text-base">*</span>
+                    <span className="text-red-600 dark:text-red-400 text-base">*</span>
                   </Label>
                   <Input
                     id="output_label"
                     placeholder="What this step produces as output"
                     value={outputLabel}
                     onChange={(e) => setOutputLabel(e.target.value)}
-                    className={errors.outputLabel ? "border-destructive" : ""}
+                    className={errors.outputLabel ? "border-red-600 dark:border-red-400" : ""}
                   />
                   {errors.outputLabel && (
-                    <p className="text-xs text-destructive flex items-center gap-1">
+                    <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
                       <span className="font-semibold">⚠</span> {errors.outputLabel}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     Brief description of what this step produces
                   </p>
                 </div>
@@ -254,7 +254,7 @@ export function StepFormDialog({
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
                     Comma-separated keywords for categorization
                   </p>
                 </div>

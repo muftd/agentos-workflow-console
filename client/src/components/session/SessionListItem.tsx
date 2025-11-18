@@ -52,9 +52,9 @@ export function SessionListItem({
         "relative w-full p-4 rounded-lg",
         "border-2 transition-all duration-200",
         "flex flex-col gap-2",
-        "hover:border-primary/50 hover:bg-muted/30",
-        isSelected && "border-primary bg-primary/5",
-        !isSelected && "border-border bg-card"
+        "hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800",
+        isSelected && "border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-950",
+        !isSelected && "border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
       )}
     >
       {/* Main clickable area */}
@@ -63,12 +63,12 @@ export function SessionListItem({
         className="w-full text-left flex flex-col gap-2"
       >
         {/* Title */}
-        <h3 className="font-semibold text-foreground truncate pr-8">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate pr-8">
           {session.title}
         </h3>
 
         {/* Meta info */}
-        <div className="flex items-center gap-4 text-xs text-foreground/60">
+        <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5" />
             <span>{formatDate(session.created_at)}</span>
@@ -82,7 +82,7 @@ export function SessionListItem({
 
         {/* Description preview */}
         {session.description && (
-          <p className="text-xs text-foreground/50 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-gray-500 dark:text-gray-500 line-clamp-2 leading-relaxed">
             {session.description}
           </p>
         )}
@@ -113,7 +113,7 @@ export function SessionListItem({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={onDelete}
-            className="text-destructive focus:text-destructive"
+            className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Delete

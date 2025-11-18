@@ -82,7 +82,7 @@ export function SessionFormDialog({
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="title">
-                Title <span className="text-destructive">*</span>
+                Title <span className="text-red-600 dark:text-red-400">*</span>
               </Label>
               <Input
                 id="title"
@@ -92,7 +92,7 @@ export function SessionFormDialog({
                 autoFocus
               />
               {error && (
-                <p className="text-sm text-destructive">{error}</p>
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               )}
             </div>
 
