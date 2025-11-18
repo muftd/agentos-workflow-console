@@ -741,3 +741,244 @@ npm run dev      # 启动开发服务器
 - 后续数据存储在浏览器 LocalStorage
 - 清除数据: 浏览器开发者工具 → Application → Local Storage → 删除 key
 - 重置数据: 删除 LocalStorage key 后刷新页面
+## 17. P0 问题修复与技术总结 (v0.2 后续)
+
+### 17.1 部署测试发现的问题
+
+**测试环境**: Replit Preview (用户首次实际环境测试)
+**测试时间**: 2025-11-18
+**问题严重程度**: P0 (阻塞核心功能)
+
+**发现的问题**:
+1. Menu 按钮完全不可见 → 无法访问 session 列表
+2. Step 表单背景深灰，输入看不清 → 无法编辑 step
+3. Step 操作位置错误 → UX 不符合用户期望
+4. Edit Mode 设计为反模式 → 增加操作复杂度
+5. Step 重排序功能缺失 → 需求理解错误
+
+### 17.2 CSS 变量失效问题分析
+
+**问题现象**:
+- 开发环境：所有 CSS 变量正常工作
+- Replit 环境：部分 CSS 变量失效
+
+**根本原因**:
+1. **Tailwind v4 CSS 变量系统限制**
+   - `bg-primary` 等变量依赖 CSS 自定义属性
+   - 在某些环境下，CSS 变量初始化时机问题
+
+2. **Dialog Portal 渲染导致继承断裂**
+   - Radix UI Dialog 通过 `Portal` 渲染到 `body` 外部
+   - CSS 变量继承链可能在 Portal 边界断裂
+   - 表现：`bg-background`, `text-foreground` 等变量未生效
+
+3. **浏览器/环境差异**
+   - 不同浏览器对 CSS 变量的支持程度略有差异
+   - Replit 的iframe环境可能影响变量继承
+
+**解决方案**:
+```tsx
+// ❌ 依赖 CSS 变量 (不可靠)
+className="bg-primary text-primary-foreground"
+className="bg-background text-foreground"
+
+// ✅ 明确的 Tailwind 颜色 (可靠)
+className="!bg-blue-600 !text-white"
+className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+```
+
+**使用 `!` 前缀的原因**:
+- 强制覆盖任何 variant 带来的样式
+- 确保颜色在所有环境下生效
+
+### 17.3 Edit Mode 反模式分析
+
+**反模式实现**:
+```tsx
+// SessionHeader 有 Edit/Done 切换按钮
+{isEditMode ? "Done" : "Edit"}
+
+// StepNode 根据 isEditMode 显示按钮
+{isEditMode && <Button>Edit</Button>}
+
+// FlowMap 根据 isEditMode 显示 Add Step
+{isEditMode && <Button>Add Step</Button>}
+```
+
+**问题分析**:
+1. **增加认知负担**: 用户需要先进入编辑模式才能操作
+2. **不符合用户期望**: 用户明确表示"不应该依赖编辑模式"
+3. **操作流程复杂**: 编辑 → Done → 再编辑 → Done
+4. **与现代 UX 模式不符**: 应该是"Direct Manipulation"而非"Mode Switching"
+
+**正确实现**:
+```tsx
+// StepDetailPanel: 选中 step 时直接显示按钮
+{selectedStep && (
+  <Button onClick={onEdit}>Edit</Button>
+  <Button onClick={onDelete}>Delete</Button>
+)}
+
+// FlowMap: Add Step 始终可见
+<Button onClick={onAddStep}>Add Step</Button>
+```
+
+**设计原则**:
+- **上下文相关**: 操作可用性由上下文决定，不是由模式决定
+- **就近原则**: 操作按钮靠近操作对象
+- **即时反馈**: 用户操作立即生效，无需模式切换
+
+### 17.4 Step 重排序实现
+
+**需求澄清**:
+- 用户说的"session 编辑" ≠ 编辑 session metadata
+- 真实含义：调整 session 内的 step 顺序
+
+**极简实现方案**:
+```typescript
+// 1. Storage 层：交换 order 值
+static moveStepLeft(sessionId: string, stepId: string): void {
+  const sortedSteps = [...session.steps].sort((a, b) => a.order - b.order);
+  const currentIndex = sortedSteps.findIndex(s => s.id === stepId);
+  
+  if (currentIndex <= 0) return; // 第一个 step 无法前移
+  
+  // 交换 order 值
+  const temp = currentStep.order;
+  currentStep.order = previousStep.order;
+  previousStep.order = temp;
+}
+
+// 2. UI 层：Move Left 按钮
+<Button
+  onClick={onMoveLeft}
+  disabled={isFirstStep}
+  title="Move step left (earlier in workflow)"
+>
+  <ArrowLeft /> Move Left
+</Button>
+```
+
+**设计考虑**:
+1. **单向移动**: 只实现"向左"(向前)，简化 UI
+2. **禁用状态**: 第一个 step 禁用按钮
+3. **视觉反馈**: ArrowLeft 图标清晰表达方向
+4. **tooltip 提示**: disabled 状态有解释
+
+**未来扩展可能性**:
+- 向右移动（向后）
+- 拖拽排序
+- 键盘快捷键（Ctrl+Up/Down）
+
+### 17.5 Form UI 改进细节
+
+**问题诊断**:
+- 用户看到：背景深灰(0-0-0-0.8)，输入框黑文字在黑背景上
+- 根源：Dialog Portal 中 CSS 变量未继承
+
+**改进策略**:
+
+**1. 三段式布局**:
+```tsx
+<DialogContent className="flex flex-col p-0">
+  <DialogHeader className="shrink-0">       {/* 固定头部 */}
+  <div className="flex-1 overflow-y-auto">  {/* 滚动内容 */}
+  <DialogFooter className="shrink-0">       {/* 固定底部 */}
+</DialogContent>
+```
+
+**2. 字段分组**:
+```
+┌─ Basic Information ─────┐
+│  [Actor]    [Tool]       │  (并排)
+│  [Skill]                 │  (全宽)
+└─────────────────────────┘
+┌─ Workflow Information ──┐
+│  [Input Label]           │
+│  [Output Label]          │
+│  [Summary]               │
+│  [Tags]                  │
+└─────────────────────────┘
+```
+
+**3. 错误增强**:
+```tsx
+<Input className={errors.actor ? "border-destructive" : ""} />
+{errors.actor && (
+  <p className="text-xs text-destructive flex items-center gap-1">
+    <span>⚠</span> {errors.actor}
+  </p>
+)}
+```
+
+**4. 明确颜色**:
+```tsx
+// Section 标题
+className="text-gray-700 dark:text-gray-300 border-b border-gray-200"
+
+// Input 组件
+className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+
+// Label 组件
+className="text-gray-900 dark:text-gray-100"
+```
+
+### 17.6 技术决策总结
+
+**何时使用 CSS 变量**:
+- ✅ 全局主题色（需要动态切换）
+- ✅ 主页面内容（非 Portal）
+- ❌ Dialog/Modal（通过 Portal 渲染）
+- ❌ 关键 UI 组件（必须保证可见性）
+
+**何时使用明确颜色**:
+- ✅ Portal 内的所有组件
+- ✅ 关键交互元素（按钮、表单）
+- ✅ 跨环境兼容性要求高的组件
+
+**颜色策略**:
+```tsx
+// 混合策略：主要用 CSS 变量，关键处用明确颜色
+<div className="bg-background">                    {/* 页面背景 */}
+  <Button className="!bg-blue-600 !text-white">   {/* 关键按钮 */}
+  <Dialog>
+    <DialogContent className="!bg-white">         {/* Portal 内 */}
+      <Input className="bg-white text-gray-900"/> {/* Form 组件 */}
+    </DialogContent>
+  </Dialog>
+</div>
+```
+
+### 17.7 测试覆盖建议
+
+**本地测试**:
+- [x] TypeScript 类型检查
+- [x] 生产构建测试
+- [x] 预览服务器测试
+- [x] 开发服务器测试
+
+**环境测试**:
+- [x] Replit 环境部署
+- [x] 不同浏览器测试
+- [ ] 移动端测试（可选）
+- [ ] 不同网络条件测试（可选）
+
+**UI 测试清单**:
+- [x] Menu 按钮可见性
+- [x] Dialog 背景和文字对比度
+- [x] Form 输入框可见性
+- [x] 所有交互按钮可点击
+- [x] 禁用状态正确显示
+
+**用户验收测试**:
+- [x] 核心流程可用（创建/编辑/删除 session 和 step）
+- [x] Step 重排序功能正常
+- [ ] 所有边缘情况处理（待用户确认）
+
+### 17.8 文档更新清单
+
+- [x] docs/plan.md (Section 5.7: Replit 部署测试与修复)
+- [x] docs/context.md (Section 17: P0 问题修复与技术总结)
+- [x] docs/task.md (Section 10: Replit 部署测试与问题修复)
+- [x] Git commits 记录完整
+- [x] 问题分析和解决方案文档化

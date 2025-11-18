@@ -432,3 +432,192 @@ v0.3 可能包括：
 - 标签管理
 - 更多字段验证规则
 - 撤销/重做功能
+### 5.7 Replit 部署测试与 P0 问题修复 ✅
+
+> **时间**: 2025-11-18
+> **背景**: 用户首次在 Replit 环境测试 v0.2，发现多个 P0 级别问题
+
+#### 5.7.1 部署依赖问题
+
+**问题**: Replit 环境缺少 @radix-ui 依赖
+```
+Failed to resolve import "@radix-ui/react-label"
+```
+
+**原因**: Replit 的 node_modules 未与 package.json 同步
+
+**解决方案**:
+```bash
+cd client && npm install
+```
+
+#### 5.7.2 P0 问题诊断（用户实际测试反馈）
+
+用户测试后报告 3 个 P0 问题：
+
+**问题 1: Multi-session Sidebar 完全不可见**
+- 症状：用户"完全没看到"侧边栏和 menu 按钮
+- 影响：无法创建/切换 session，核心功能无法使用
+- 诊断：Menu 按钮使用 CSS 变量 `bg-primary`，在某些环境下不生效
+- 开发者工具显示：border color 为浅灰 `rgb(229, 232, 235)`，在白背景上不可见
+
+**问题 2: Session 编辑操作需求理解错误**
+- 期望："session 的编辑操作实际上是指调整 session 内的 step 顺序"
+- 实现：实现了 session metadata 编辑（title, description）
+- 真实需求：Step 重排序功能（向前/向后移动）
+
+**问题 3: Step 操作设计缺陷**
+- 子问题 3.1: Step 表单 UI 有"严重问题"
+  - 背景深灰/黑色（0-0-0-0.8）
+  - 输入框黑色文字在深色背景上看不清
+  - CSS 变量在 Dialog Portal 中继承失效
+- 子问题 3.2: 操作入口位置错误
+  - 实现：Edit/Delete 按钮在 StepNode 上
+  - 要求：应在 StepDetailPanel 标题右侧
+- 子问题 3.3: Edit Mode 反模式
+  - 实现：通过 Edit/Done 切换模式，操作依赖 isEditMode
+  - 问题：用户明确表示"不应该依赖 session 的编辑模式"
+  - 要求：操作应始终可用（当 step 选中时）
+
+#### 5.7.3 修复过程（4 个 commits）
+
+**Commit 1: d4bc558 - 关键 UX 问题修复**
+
+修复范围：
+1. Menu 按钮可见性
+   - 改为 `variant="default"` + `shadow-lg`
+   - 增加 z-index 到 z-50
+   - 位置：Sidebar.tsx:89
+
+2. Step 操作位置调整
+   - 从 StepNode 移除 Edit/Delete 按钮
+   - 添加到 StepDetailPanel 标题右侧
+   - 添加 onEdit, onDelete props
+   - 位置：StepDetailPanel.tsx:74-95
+
+3. 移除 Edit Mode 反模式
+   - 删除 isEditMode 状态依赖
+   - 删除 SessionHeader 的 Edit/Done 切换
+   - Add Step 按钮始终可见
+   - 简化 FlowMap 和 StepNode 逻辑
+   - 恢复 StepNode 到 v0.1 简洁设计
+
+修改文件：
+- Sidebar.tsx, StepDetailPanel.tsx, WorkflowConsolePage.tsx
+- FlowMap.tsx, StepNode.tsx, SessionHeader.tsx
+
+**Commit 2: 5800397 - Step 表单 UI 改进**
+
+修复问题：用户报告的表单"严重问题"
+
+改进内容：
+1. 固定 Header/Footer，只有内容区滚动
+2. 字段分组：Actor & Tool 并排，增加宽度 600px → 700px
+3. 增强错误显示：⚠ 图标 + 红色边框
+4. 完善字段说明和必填标记
+5. 更清晰的按钮文字："Create Step" / "Save Changes"
+
+位置：StepFormDialog.tsx:103-266
+
+**Commit 3: 589387e - Step 重排序功能（Move Left）**
+
+实现真实需求："session 的编辑操作 = 调整 step 顺序"
+
+方案：极简实现
+- "Move Left"按钮（向左移动 = 顺序前移 1 格）
+- 与前一个 step 交换 order 值
+- 第一个 step 禁用该按钮
+
+实现位置：
+- WorkflowStorage.ts:269-293 (moveStepLeft 方法)
+- AppContext.tsx (MOVE_STEP_LEFT action + reducer + helper)
+- StepDetailPanel.tsx:77-88 (Move Left 按钮)
+- WorkflowConsolePage.tsx (集成逻辑)
+
+**Commit 4: cd38865 - 颜色可见性修复**
+
+**根本原因**：CSS 变量在某些环境/Portal 中不生效
+
+**问题 1: Menu 按钮不可见**
+- 修复：使用明确的 Tailwind 颜色
+  ```tsx
+  className="!bg-blue-600 hover:!bg-blue-700 !text-white
+             shadow-lg border-2 !border-blue-700"
+  ```
+
+**问题 2: Dialog 表单背景深灰/黑色**
+- 修复：所有容器使用 `!bg-white dark:!bg-gray-900`
+- Input/Textarea/Label 使用明确颜色：
+  ```tsx
+  bg-white dark:bg-gray-800
+  text-gray-900 dark:text-gray-100
+  border-gray-300 dark:border-gray-600
+  ```
+
+修改文件：
+- Sidebar.tsx, StepFormDialog.tsx
+- input.tsx, textarea.tsx, label.tsx
+
+#### 5.7.4 经验教训
+
+**技术选型教训**:
+1. ⭐⭐⭐ **CSS 变量在 Portal 中不可靠**
+   - Radix UI Dialog 通过 Portal 渲染，CSS 变量继承可能断裂
+   - 解决：关键 UI 组件使用明确的 Tailwind 颜色类
+   - 使用 `!` 前缀强制覆盖
+
+2. ⭐⭐ **环境差异导致 CSS 变量行为不一致**
+   - 开发环境（本地）：CSS 变量正常
+   - 生产环境（Replit）：CSS 变量部分失效
+   - 教训：依赖 CSS 变量的组件需在目标环境测试
+
+**UX 设计教训**:
+1. ⭐⭐⭐ **避免 Mode-dependent 操作模式**
+   - 错误：通过 Edit/Done 切换进入编辑模式
+   - 正确：操作始终可用（当上下文允许时）
+
+2. ⭐⭐ **操作按钮应靠近数据**
+   - 错误：Edit/Delete 在 StepNode 卡片上
+   - 正确：操作按钮在详情面板标题旁
+   - 原则：操作对象在哪里，按钮就在哪里
+
+3. ⭐⭐ **需求理解需要用户验证**
+   - "编辑 session" → 实现了 metadata 编辑
+   - 用户期望：调整 step 顺序
+   - 教训：抽象概念需要具体示例确认
+
+**测试流程教训**:
+1. ⭐⭐⭐ **目标环境测试不可省略**
+   - 本地构建成功 ≠ 生产环境正常
+   - CSS 变量、颜色、Portal 需在目标环境验证
+
+2. ⭐⭐ **用户实际测试价值巨大**
+   - Claude Code 无法模拟真实使用场景
+   - 用户首次测试发现 4 个 P0 问题
+
+#### 5.7.5 最终统计
+
+**代码变更**:
+- 修改文件：11 个
+- 新增行：+162
+- 删除行：-119
+- 净增长：+43 行
+
+**Git 提交**:
+```
+cd38865 Fix: Color visibility issues in Menu button and Dialog forms
+589387e Feat: Implement step reordering (move left)
+5800397 Fix: Step form UI improvements
+d4bc558 Fix: Critical P0 UX issues from user testing
+```
+
+**构建结果**:
+```bash
+dist/assets/index-CDtyNBCc.css   35.19 kB │ gzip:   6.82 kB
+dist/assets/index-CHbi4BYe.js   356.19 kB │ gzip: 111.48 kB
+✓ built in 7.33s
+```
+
+**时间成本**:
+- P0 问题修复：约 2 小时
+- 问题诊断：40% | 代码实现：40% | 测试验证：20%
