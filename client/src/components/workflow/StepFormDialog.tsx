@@ -100,8 +100,8 @@ export function StepFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col gap-0 p-0 !bg-white dark:!bg-gray-900">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full bg-white dark:bg-gray-900">
+      <DialogContent className="sm:max-w-[700px] !bg-white dark:!bg-gray-900 p-0 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col max-h-[85vh] bg-white dark:bg-gray-900">
           {/* Fixed Header */}
           <DialogHeader className="px-6 pt-6 pb-4 shrink-0 bg-white dark:bg-gray-900">
             <DialogTitle className="text-gray-900 dark:text-gray-100">
@@ -115,7 +115,7 @@ export function StepFormDialog({
           </DialogHeader>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-2 bg-white dark:bg-gray-900">
+          <div className="flex-1 overflow-y-auto px-6 py-2 bg-white dark:bg-gray-900 min-h-0">
             <div className="grid gap-6">
               {/* Basic Information Section */}
               <div className="space-y-4">
