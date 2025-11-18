@@ -49,7 +49,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Inter", "Source Han Sans CN", "system-ui", "sans-serif"],
+        sans: ["Inter", "Noto Sans SC", "system-ui", "sans-serif"],
         mono: ["IBM Plex Mono", "SF Mono", "monospace"],
       },
       keyframes: {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { SessionHeader } from "@/components/workflow/SessionHeader";
 import { FlowMap } from "@/components/workflow/FlowMap";
 import { StepDetailPanel } from "@/components/workflow/StepDetailPanel";
-import type { WorkflowSession, Step } from "@/types/workflow";
+import type { WorkflowSession } from "@/types/workflow";
 
 export function WorkflowConsolePage() {
   const [session, setSession] = useState<WorkflowSession | null>(null);
@@ -34,6 +34,31 @@ export function WorkflowConsolePage() {
         setLoading(false);
       });
   }, []);
+
+  // Keyboard navigation: Arrow Left/Right to switch steps
+  useEffect(() => {
+    if (!session || !selectedStepId) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const sortedSteps = [...session.steps].sort((a, b) => a.order - b.order);
+      const currentIndex = sortedSteps.findIndex((s) => s.id === selectedStepId);
+
+      if (currentIndex === -1) return;
+
+      if (e.key === 'ArrowLeft' && currentIndex > 0) {
+        // Navigate to previous step
+        setSelectedStepId(sortedSteps[currentIndex - 1].id);
+        e.preventDefault();
+      } else if (e.key === 'ArrowRight' && currentIndex < sortedSteps.length - 1) {
+        // Navigate to next step
+        setSelectedStepId(sortedSteps[currentIndex + 1].id);
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [session, selectedStepId]);
 
   // Loading state
   if (loading) {
