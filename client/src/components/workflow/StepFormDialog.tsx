@@ -100,124 +100,170 @@ export function StepFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col gap-0 p-0">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+          {/* Fixed Header */}
+          <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
             <DialogTitle>
               {mode === "create" ? "Create New Step" : "Edit Step"}
             </DialogTitle>
             <DialogDescription>
               {mode === "create"
-                ? "Add a new step to the workflow."
-                : "Update the step information."}
+                ? "Add a new step to the workflow. Fields marked with * are required."
+                : "Update the step information. Fields marked with * are required."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            {/* Actor */}
-            <div className="grid gap-2">
-              <Label htmlFor="actor">
-                Actor <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="actor"
-                placeholder="e.g., Coach C, Claude Code, Replit"
-                value={actor}
-                onChange={(e) => setActor(e.target.value)}
-                autoFocus
-              />
-              {errors.actor && (
-                <p className="text-sm text-destructive">{errors.actor}</p>
-              )}
-            </div>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-2">
+            <div className="grid gap-6">
+              {/* Basic Information Section */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-foreground/80 border-b pb-2">
+                  Basic Information
+                </h4>
 
-            {/* Skill */}
-            <div className="grid gap-2">
-              <Label htmlFor="skill">Skill (optional)</Label>
-              <Input
-                id="skill"
-                placeholder="e.g., knowledge-processing"
-                value={skill}
-                onChange={(e) => setSkill(e.target.value)}
-              />
-            </div>
+                {/* Actor & Tool - Side by side */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="actor" className="flex items-center gap-1">
+                      Actor
+                      <span className="text-destructive text-base">*</span>
+                    </Label>
+                    <Input
+                      id="actor"
+                      placeholder="Coach C, Claude Code, etc."
+                      value={actor}
+                      onChange={(e) => setActor(e.target.value)}
+                      className={errors.actor ? "border-destructive" : ""}
+                      autoFocus
+                    />
+                    {errors.actor && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <span className="font-semibold">⚠</span> {errors.actor}
+                      </p>
+                    )}
+                  </div>
 
-            {/* Tool */}
-            <div className="grid gap-2">
-              <Label htmlFor="tool">
-                Tool <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="tool"
-                placeholder="e.g., Claude Code, ChatGPT, Gemini"
-                value={tool}
-                onChange={(e) => setTool(e.target.value)}
-              />
-              {errors.tool && (
-                <p className="text-sm text-destructive">{errors.tool}</p>
-              )}
-            </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="tool" className="flex items-center gap-1">
+                      Tool
+                      <span className="text-destructive text-base">*</span>
+                    </Label>
+                    <Input
+                      id="tool"
+                      placeholder="Claude Code, ChatGPT, etc."
+                      value={tool}
+                      onChange={(e) => setTool(e.target.value)}
+                      className={errors.tool ? "border-destructive" : ""}
+                    />
+                    {errors.tool && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <span className="font-semibold">⚠</span> {errors.tool}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-            {/* Input Label */}
-            <div className="grid gap-2">
-              <Label htmlFor="input_label">
-                Input Label <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="input_label"
-                placeholder="Brief description of input"
-                value={inputLabel}
-                onChange={(e) => setInputLabel(e.target.value)}
-              />
-              {errors.inputLabel && (
-                <p className="text-sm text-destructive">{errors.inputLabel}</p>
-              )}
-            </div>
+                {/* Skill - Full width */}
+                <div className="grid gap-2">
+                  <Label htmlFor="skill">Skill (optional)</Label>
+                  <Input
+                    id="skill"
+                    placeholder="e.g., knowledge-processing, demo-seed-extractor"
+                    value={skill}
+                    onChange={(e) => setSkill(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    The workflow skill or capability being executed
+                  </p>
+                </div>
+              </div>
 
-            {/* Output Label */}
-            <div className="grid gap-2">
-              <Label htmlFor="output_label">
-                Output Label <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="output_label"
-                placeholder="Brief description of output"
-                value={outputLabel}
-                onChange={(e) => setOutputLabel(e.target.value)}
-              />
-              {errors.outputLabel && (
-                <p className="text-sm text-destructive">{errors.outputLabel}</p>
-              )}
-            </div>
+              {/* Workflow Information Section */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-foreground/80 border-b pb-2">
+                  Workflow Information
+                </h4>
 
-            {/* Summary */}
-            <div className="grid gap-2">
-              <Label htmlFor="summary">Summary (optional)</Label>
-              <Textarea
-                id="summary"
-                placeholder="Brief action description (1-2 sentences)"
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                rows={3}
-              />
-            </div>
+                {/* Input Label */}
+                <div className="grid gap-2">
+                  <Label htmlFor="input_label" className="flex items-center gap-1">
+                    Input Label
+                    <span className="text-destructive text-base">*</span>
+                  </Label>
+                  <Input
+                    id="input_label"
+                    placeholder="What this step receives as input"
+                    value={inputLabel}
+                    onChange={(e) => setInputLabel(e.target.value)}
+                    className={errors.inputLabel ? "border-destructive" : ""}
+                  />
+                  {errors.inputLabel && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <span className="font-semibold">⚠</span> {errors.inputLabel}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Brief description of what this step receives
+                  </p>
+                </div>
 
-            {/* Tags */}
-            <div className="grid gap-2">
-              <Label htmlFor="tags">Tags (optional)</Label>
-              <Input
-                id="tags"
-                placeholder="Comma-separated tags, e.g., research, implementation"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Separate multiple tags with commas
-              </p>
+                {/* Output Label */}
+                <div className="grid gap-2">
+                  <Label htmlFor="output_label" className="flex items-center gap-1">
+                    Output Label
+                    <span className="text-destructive text-base">*</span>
+                  </Label>
+                  <Input
+                    id="output_label"
+                    placeholder="What this step produces as output"
+                    value={outputLabel}
+                    onChange={(e) => setOutputLabel(e.target.value)}
+                    className={errors.outputLabel ? "border-destructive" : ""}
+                  />
+                  {errors.outputLabel && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <span className="font-semibold">⚠</span> {errors.outputLabel}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Brief description of what this step produces
+                  </p>
+                </div>
+
+                {/* Summary */}
+                <div className="grid gap-2">
+                  <Label htmlFor="summary">Summary (optional)</Label>
+                  <Textarea
+                    id="summary"
+                    placeholder="Brief description of what this step does (1-2 sentences)"
+                    value={summary}
+                    onChange={(e) => setSummary(e.target.value)}
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Tags */}
+                <div className="grid gap-2">
+                  <Label htmlFor="tags">Tags (optional)</Label>
+                  <Input
+                    id="tags"
+                    placeholder="research, implementation, planning"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Comma-separated keywords for categorization
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
+          {/* Fixed Footer */}
+          <DialogFooter className="px-6 py-4 border-t shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -226,7 +272,7 @@ export function StepFormDialog({
               Cancel
             </Button>
             <Button type="submit">
-              {mode === "create" ? "Create" : "Save"}
+              {mode === "create" ? "Create Step" : "Save Changes"}
             </Button>
           </DialogFooter>
         </form>
