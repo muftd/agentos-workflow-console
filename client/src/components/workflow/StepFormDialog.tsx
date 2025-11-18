@@ -100,14 +100,14 @@ export function StepFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col gap-0 p-0">
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+      <DialogContent className="sm:max-w-[700px] max-h-[85vh] flex flex-col gap-0 p-0 !bg-white dark:!bg-gray-900">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full bg-white dark:bg-gray-900">
           {/* Fixed Header */}
-          <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
-            <DialogTitle>
+          <DialogHeader className="px-6 pt-6 pb-4 shrink-0 bg-white dark:bg-gray-900">
+            <DialogTitle className="text-gray-900 dark:text-gray-100">
               {mode === "create" ? "Create New Step" : "Edit Step"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-600 dark:text-gray-400">
               {mode === "create"
                 ? "Add a new step to the workflow. Fields marked with * are required."
                 : "Update the step information. Fields marked with * are required."}
@@ -115,11 +115,11 @@ export function StepFormDialog({
           </DialogHeader>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-2">
+          <div className="flex-1 overflow-y-auto px-6 py-2 bg-white dark:bg-gray-900">
             <div className="grid gap-6">
               {/* Basic Information Section */}
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-foreground/80 border-b pb-2">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
                   Basic Information
                 </h4>
 
@@ -182,7 +182,7 @@ export function StepFormDialog({
 
               {/* Workflow Information Section */}
               <div className="space-y-4">
-                <h4 className="text-sm font-semibold text-foreground/80 border-b pb-2">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2">
                   Workflow Information
                 </h4>
 
@@ -263,7 +263,7 @@ export function StepFormDialog({
           </div>
 
           {/* Fixed Footer */}
-          <DialogFooter className="px-6 py-4 border-t shrink-0">
+          <DialogFooter className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0">
             <Button
               type="button"
               variant="outline"

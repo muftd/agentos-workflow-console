@@ -86,7 +86,7 @@ export function Sidebar() {
         variant="default"
         size="icon"
         onClick={toggleSidebar}
-        className="fixed top-4 left-4 z-50 shadow-lg"
+        className="fixed top-4 left-4 z-50 !bg-blue-600 hover:!bg-blue-700 !text-white shadow-lg border-2 !border-blue-700"
         aria-label="Toggle sessions sidebar"
       >
         <Menu className="w-5 h-5" />
