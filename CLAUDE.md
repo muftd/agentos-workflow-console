@@ -33,6 +33,41 @@ The application has three main sections:
 
 **Interaction**: Clicking a node highlights it and updates the detail panel.
 
+## Repository Structure & Git Strategy
+
+### Location & Relationship
+This project is organized as a **Git Submodule** within the obsidian-vault:
+```
+obsidian-vault/                          ← Main knowledge base repo
+└── projects/workflow-console/           ← This project (submodule)
+    └── Independent GitHub repo: agentos-workflow-console
+```
+
+### Development Strategy (Plan A: Independent Iteration)
+**Key principle**: Develop workflow-console independently without requiring frequent obsidian-vault updates.
+
+**Daily workflow** (in `projects/workflow-console/`):
+```bash
+# Work normally, push directly to agentos-workflow-console repo
+git add . && git commit -m "..." && git push origin main
+```
+
+**Milestone updates** (in `obsidian-vault/` at release points):
+```bash
+# Only when completing v0.1, v0.2, etc.
+git add projects/workflow-console
+git commit -m "Release: Workflow Console v0.1"
+git push origin main
+```
+
+**Why this approach**:
+- ✅ No friction during daily development
+- ✅ GitHub repo (agentos-workflow-console) always stays current
+- ✅ obsidian-vault captures snapshot at release milestones
+- ✅ Clear separation between active development and knowledge base
+
+See `WORKFLOW.md` for detailed daily operations guide.
+
 ## Development
 
 ### Project Structure
