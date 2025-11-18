@@ -99,10 +99,12 @@ App
 ### Build Configuration
 
 **Vite Setup:**
-- Dev server: `host: 0.0.0.0, port: 5000, strictPort: true`
+- Dev server: `host: 0.0.0.0, port: 5000, strictPort: true, allowedHosts: true`
+- Tailwind CSS v4 integration via `@tailwindcss/vite` plugin
 - Path alias: `@/` → `./src/`
 - React plugin with Fast Refresh
 - Build output to `dist/`
+- **Important**: `allowedHosts: true` is required for Replit preview to work with dynamic hostnames
 
 **TypeScript Config:**
 - Target: ES2022
@@ -142,9 +144,11 @@ App
 - **Lucide React**: Modern icon set (ArrowRight, Clock icons)
 
 ### Styling
-- **Tailwind CSS**: Utility-first CSS framework
-- **tailwindcss-animate**: Animation utilities
-- **Autoprefixer**: CSS vendor prefix automation
+- **Tailwind CSS v4**: Utility-first CSS framework with native Vite integration
+  - Uses `@tailwindcss/vite` plugin for optimal performance
+  - CSS-first configuration via `@import "tailwindcss"` in index.css
+  - Custom color system via CSS variables (HSL format)
+  - Custom animations defined in tailwind.config.ts
 
 ### Development Tools
 - **ESLint**: Code linting with TypeScript support
