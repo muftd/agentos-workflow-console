@@ -1,14 +1,27 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { StepNode } from "./StepNode";
 import type { Step } from "@/types/workflow";
 
 interface FlowMapProps {
   steps: Step[];
   selectedStepId: string | null;
+  isEditMode?: boolean;
   onSelectStep: (stepId: string) => void;
+  onEditStep?: (step: Step) => void;
+  onDeleteStep?: (step: Step) => void;
+  onAddStep?: () => void;
 }
 
-export function FlowMap({ steps, selectedStepId, onSelectStep }: FlowMapProps) {
+export function FlowMap({
+  steps,
+  selectedStepId,
+  isEditMode,
+  onSelectStep,
+  onEditStep,
+  onDeleteStep,
+  onAddStep
+}: FlowMapProps) {
   // Sort steps by order
   const sortedSteps = [...steps].sort((a, b) => a.order - b.order);
 
@@ -24,7 +37,10 @@ export function FlowMap({ steps, selectedStepId, onSelectStep }: FlowMapProps) {
               <StepNode
                 step={step}
                 isSelected={step.id === selectedStepId}
+                isEditMode={isEditMode}
                 onSelect={() => onSelectStep(step.id)}
+                onEdit={onEditStep ? () => onEditStep(step) : undefined}
+                onDelete={onDeleteStep ? () => onDeleteStep(step) : undefined}
               />
               {index < sortedSteps.length - 1 && (
                 <ArrowRight
@@ -35,6 +51,29 @@ export function FlowMap({ steps, selectedStepId, onSelectStep }: FlowMapProps) {
               )}
             </div>
           ))}
+
+          {/* Add Step button in edit mode */}
+          {isEditMode && onAddStep && (
+            <>
+              {sortedSteps.length > 0 && (
+                <ArrowRight
+                  className="w-6 h-6 md:w-7 md:h-7 text-primary/40 shrink-0 transition-colors"
+                  strokeWidth={2.5}
+                  aria-hidden="true"
+                />
+              )}
+              <Button
+                variant="outline"
+                className="w-80 h-48 border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 hover:border-primary/60 transition-all duration-300"
+                onClick={onAddStep}
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <Plus className="w-10 h-10 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Add New Step</span>
+                </div>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

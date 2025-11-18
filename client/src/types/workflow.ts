@@ -51,8 +51,8 @@ export interface WorkflowSession {
   /** Creation timestamp (ISO 8601 format) */
   created_at: string;
 
-  /** Brief description of the session */
-  description: string;
+  /** Brief description of the session (optional in v0.2) */
+  description?: string;
 
   /** List of steps/hops in the workflow */
   steps: Step[];

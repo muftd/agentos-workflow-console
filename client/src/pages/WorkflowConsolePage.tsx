@@ -1,46 +1,52 @@
 import { useEffect, useState } from "react";
+import { useApp, useCurrentSession } from "@/contexts/AppContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { SessionHeader } from "@/components/workflow/SessionHeader";
 import { FlowMap } from "@/components/workflow/FlowMap";
 import { StepDetailPanel } from "@/components/workflow/StepDetailPanel";
-import type { WorkflowSession } from "@/types/workflow";
+import { StepFormDialog } from "@/components/workflow/StepFormDialog";
+import type { Step } from "@/types/workflow";
 
 export function WorkflowConsolePage() {
-  const [session, setSession] = useState<WorkflowSession | null>(null);
+  const { state, toggleEditMode, addStep, updateStep, deleteStep } = useApp();
+  const currentSession = useCurrentSession();
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Load workflow data
+  // Step form dialog state
+  const [stepFormOpen, setStepFormOpen] = useState(false);
+  const [stepFormMode, setStepFormMode] = useState<"create" | "edit">("create");
+  const [editingStep, setEditingStep] = useState<Step | null>(null);
+
+  // Delete confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingStep, setDeletingStep] = useState<Step | null>(null);
+
+  // Select first step when session changes
   useEffect(() => {
-    fetch('/data/workflow-log-sample.json')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to load data: ${res.status} ${res.statusText}`);
-        }
-        return res.json();
-      })
-      .then((data: WorkflowSession) => {
-        setSession(data);
-        // Select first step by default
-        if (data.steps.length > 0) {
-          const firstStep = data.steps.sort((a, b) => a.order - b.order)[0];
-          setSelectedStepId(firstStep.id);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to load workflow data:', err);
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+    if (currentSession && currentSession.steps.length > 0) {
+      const firstStep = [...currentSession.steps].sort((a, b) => a.order - b.order)[0];
+      setSelectedStepId(firstStep.id);
+    } else {
+      setSelectedStepId(null);
+    }
+  }, [currentSession?.session_id]);
 
   // Keyboard navigation: Arrow Left/Right to switch steps
   useEffect(() => {
-    if (!session || !selectedStepId) return;
+    if (!currentSession || !selectedStepId) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      const sortedSteps = [...session.steps].sort((a, b) => a.order - b.order);
+      const sortedSteps = [...currentSession.steps].sort((a, b) => a.order - b.order);
       const currentIndex = sortedSteps.findIndex((s) => s.id === selectedStepId);
 
       if (currentIndex === -1) return;
@@ -58,10 +64,58 @@ export function WorkflowConsolePage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [session, selectedStepId]);
+  }, [currentSession, selectedStepId]);
+
+  // Handle add step
+  const handleAddStep = () => {
+    setStepFormMode("create");
+    setEditingStep(null);
+    setStepFormOpen(true);
+  };
+
+  // Handle edit step
+  const handleEditStep = (step: Step) => {
+    setStepFormMode("edit");
+    setEditingStep(step);
+    setStepFormOpen(true);
+  };
+
+  // Handle delete step (open confirmation)
+  const handleDeleteStep = (step: Step) => {
+    setDeletingStep(step);
+    setDeleteDialogOpen(true);
+  };
+
+  // Confirm delete step
+  const confirmDeleteStep = () => {
+    if (deletingStep && currentSession) {
+      deleteStep(currentSession.session_id, deletingStep.id);
+      setDeletingStep(null);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  // Handle step form submit
+  const handleStepFormSubmit = (data: {
+    actor: string;
+    skill: string | null;
+    tool: string;
+    input_label: string;
+    output_label: string;
+    summary?: string;
+    tags?: string[];
+  }) => {
+    if (!currentSession) return;
+
+    if (stepFormMode === "create") {
+      addStep(currentSession.session_id, data);
+    } else if (editingStep) {
+      updateStep(currentSession.session_id, editingStep.id, data);
+    }
+  };
 
   // Loading state
-  if (loading) {
+  if (state.isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -72,15 +126,15 @@ export function WorkflowConsolePage() {
     );
   }
 
-  // Error state
-  if (error || !session) {
+  // No session state
+  if (!currentSession) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md">
-          <div className="text-5xl">⚠️</div>
-          <h2 className="text-xl font-bold text-foreground">Failed to Load Workflow</h2>
+          <div className="text-5xl">📋</div>
+          <h2 className="text-xl font-bold text-foreground">No Workflow Selected</h2>
           <p className="text-sm text-foreground/60 leading-relaxed">
-            {error || 'No data available'}
+            Please select or create a workflow to get started.
           </p>
         </div>
       </div>
@@ -88,23 +142,61 @@ export function WorkflowConsolePage() {
   }
 
   // Find selected step
-  const selectedStep = session.steps.find((s) => s.id === selectedStepId);
+  const selectedStep = currentSession.steps.find((s) => s.id === selectedStepId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
+      <Sidebar />
+
       <SessionHeader
-        title={session.title}
-        createdAt={session.created_at}
-        description={session.description}
+        title={currentSession.title}
+        createdAt={currentSession.created_at}
+        description={currentSession.description}
+        isEditMode={state.isEditMode}
+        onToggleEditMode={toggleEditMode}
       />
 
       <FlowMap
-        steps={session.steps}
+        steps={currentSession.steps}
         selectedStepId={selectedStepId}
+        isEditMode={state.isEditMode}
         onSelectStep={setSelectedStepId}
+        onEditStep={handleEditStep}
+        onDeleteStep={handleDeleteStep}
+        onAddStep={handleAddStep}
       />
 
       <StepDetailPanel step={selectedStep} />
+
+      {/* Step Form Dialog */}
+      <StepFormDialog
+        open={stepFormOpen}
+        onOpenChange={setStepFormOpen}
+        mode={stepFormMode}
+        step={editingStep}
+        onSubmit={handleStepFormSubmit}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Step?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this step? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteStep}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
