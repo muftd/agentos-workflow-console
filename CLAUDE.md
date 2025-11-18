@@ -66,7 +66,12 @@ git push origin main
 - ✅ obsidian-vault captures snapshot at release milestones
 - ✅ Clear separation between active development and knowledge base
 
-See `WORKFLOW.md` for detailed daily operations guide.
+### Reference Documents
+When starting development, read these guides in order:
+1. **WORKFLOW.md** — Daily operations and git strategy (method Plan A)
+2. **docs/tooling-workflow.md** — ChatGPT + Claude Code + Replit collaboration protocol
+3. **docs/plan.md** — Overall development stages and timeline
+4. **docs/iteration-*.md** — Current iteration goals and specs
 
 ## Development
 

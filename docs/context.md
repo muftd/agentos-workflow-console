@@ -1,6 +1,6 @@
-# Workflow Console · Tasks (v0.1)
+# Workflow Console · Context (v0.1)
 
-> 这一轮开发任务清单（面向Claude Code）
+> 项目背景与上下文说明
 
 ## 1. 数据相关
 
