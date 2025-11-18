@@ -164,10 +164,92 @@ cd client && npm run build && echo "✅ Build successful"
 cd client && timeout 5s npm run preview && echo "✅ Preview server starts"
 ```
 
-## 4. 下一步计划
+## 4. Iteration 004: UI 精致化 (2025-11-18) ✅
+
+### 目标
+将 v0.1 的粗糙 UI 提升到 Figma/Framer 级别的专业视觉质量。
+
+### 问题诊断
+1. **视觉层次混乱** - 所有文字都是小字号，没有主次对比
+2. **空间拥挤** - 节点卡片过小 (256×128px)，内边距不足
+3. **设计细节缺失** - 只有基础阴影，缺少渐变和光效
+4. **排版质量低** - 字体对比不够，行高拥挤
+5. **颜色单调** - 大量灰色，缺少品牌色和渐变
+
+### 实施成果
+
+#### Phase 1: StepNode 重构 ✅
+- 卡片尺寸增大 25%：256×128px → 320×192px
+- 内边距增加：p-4 → p-6
+- 建立 5 级视觉层次：
+  - output_label: text-lg font-semibold (主角)
+  - actor badge: 渐变背景 (from-X-500 to-X-600)
+  - skill: text-sm (次要)
+  - tool: text-xs text-foreground/50 (辅助)
+  - order: text-xs font-light (点缀)
+- 实现多层阴影系统 (shadow-card 系列工具类)
+- 增强 hover 效果：-translate-y-1 + scale-[1.02] + shadow-card-hover
+- 增强 selected 效果：渐变背景 + shadow-card-selected
+- 动画优化：duration-300 ease-out
+
+#### Phase 2: FlowMap 增强 ✅
+- 添加渐变背景：from-background via-muted/20 to-background
+- 增加垂直间距：py-8/12 → py-12/16
+- 增加水平间距：gap-4/6 → gap-6/8
+- 优化箭头样式：更大尺寸 + primary 颜色 + 更粗描边
+
+#### Phase 3: StepDetailPanel 重构 ✅
+- 表单式布局 → 卡片化设计
+- 添加图标增强的元数据卡片 (Hash, Clock, User, Wrench, Zap)
+- Input/Output 独立卡片展示，Output 带渐变高亮
+- 改进标题排版：uppercase tracking-wide
+- 渐变背景增加层次感
+
+#### Phase 4: SessionHeader 优化 ✅
+- 标题增大：text-xl/2xl → text-2xl/3xl font-bold
+- 增强背景模糊：backdrop-blur-sm → backdrop-blur-md
+- 提高不透明度：bg-background/80 → bg-background/90
+- 添加微妙阴影和品牌色点缀
+
+#### Phase 5: 全局设计系统 ✅
+- 自定义阴影工具类 (shadow-card, shadow-card-hover, shadow-card-selected)
+- 深色模式阴影变体
+- 页面渐变背景
+- 统一动画时长和缓动函数
+
+### 测试结果
+```
+✅ TypeScript 类型检查通过
+✅ 生产构建成功 (CSS: 28.26 KB, JS: 233.25 KB)
+✅ 预览服务器正常启动
+✅ 开发服务器正常启动
+```
+
+### 视觉质量对比
+
+**优化前**：
+- 节点 256×128px, p-4, shadow-sm, text-xs/sm
+- 平淡、拥挤、单调
+- 简单的 hover 位移
+
+**优化后**：
+- 节点 320×192px, p-6, 多层阴影, text-lg 主标题
+- 层次清晰、舒展、精致
+- 位移+缩放+阴影+边框+渐变
+
+### 成功标准达成
+- ✅ 清晰的视觉层次
+- ✅ 充足的留白
+- ✅ 精致的多层阴影
+- ✅ 丰富的微交互
+- ✅ 统一的设计语言
+- ✅ 专业的渐变应用
+- ✅ 达到 Figma/Framer 质量水准
+
+## 5. 下一步计划
 
 v0.2 将在后续迭代中规划，可能包括：
 - 多 session 支持
 - 过滤和搜索功能
 - 分支工作流可视化
-- 深色模式支持
+- 深色模式完善

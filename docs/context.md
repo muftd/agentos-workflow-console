@@ -124,3 +124,173 @@ Claude Code (开发 + 配置 + 测试)
     ↓
 完成 (无需修复)
 ```
+
+## 8. Iteration 004: UI 精致化实施记录
+
+### 8.1 优化背景
+
+**问题**: 用户反馈部署后 UI 设计非常粗糙，与参考项目 PromptImagine 差距很大。
+**目标**: 达到 Figma/Framer 级别的 UI 质量。
+
+### 8.2 核心改进措施
+
+#### StepNode 组件 (client/src/components/workflow/StepNode.tsx)
+**视觉层次重建**:
+```typescript
+// 5 级信息层级
+output_label: text-lg font-semibold          // 18px，粗体，主角
+actor badge:  gradient bg + text-white      // 渐变背景，醒目
+skill:        text-sm text-foreground/70    // 14px，次要
+tool:         text-xs text-foreground/50    // 12px，辅助
+order:        text-xs font-light /40        // 12px，点缀
+```
+
+**尺寸与间距**:
+```typescript
+// 优化前: w-64 h-32 p-4 (256×128px, 16px padding)
+// 优化后: w-80 h-48 p-6 (320×192px, 24px padding)
+// 增长: 25% 面积，50% 内边距
+```
+
+**阴影系统** (client/src/index.css):
+```css
+.shadow-card          /* 默认：双层柔和阴影 */
+.shadow-card-hover    /* hover：深度阴影 */
+.shadow-card-selected /* selected：带颜色的光晕 */
+```
+
+**交互增强**:
+```typescript
+hover:   -translate-y-1 + scale-[1.02] + shadow-card-hover + border-primary/50
+selected: gradient bg + shadow-card-selected + border-primary
+```
+
+#### FlowMap 组件 (client/src/components/workflow/FlowMap.tsx)
+**氛围营造**:
+```typescript
+// 背景渐变增加层次
+bg-gradient-to-b from-background via-muted/20 to-background
+
+// 间距增加呼吸感
+py-12 md:py-16  (之前: py-8 md:py-12)
+gap-6 md:gap-8  (之前: gap-4 md:gap-6)
+
+// 箭头更醒目
+w-6 h-6 md:w-7 md:h-7 text-primary/40 strokeWidth={2.5}
+```
+
+#### StepDetailPanel 组件 (client/src/components/workflow/StepDetailPanel.tsx)
+**卡片化设计**:
+- 元数据：图标 + 标签的 InfoCard 组件
+- Input/Output：独立卡片，Output 带 primary 渐变高亮
+- 所有标题：uppercase tracking-wide 增强视觉
+- 背景：渐变增加层次感
+
+**图标系统** (Lucide icons):
+```typescript
+Hash, Clock, User, Wrench, Zap, ArrowRight
+```
+
+#### SessionHeader 组件 (client/src/components/workflow/SessionHeader.tsx)
+**现代化提升**:
+```typescript
+// 标题更突出
+text-2xl md:text-3xl font-bold tracking-tight
+
+// 背景更强
+backdrop-blur-md bg-background/90 shadow-sm
+
+// 细节优化
+Clock icon: text-primary  // 品牌色点缀
+时间文本: font-medium text-foreground/60
+```
+
+#### 全局优化 (client/src/pages/WorkflowConsolePage.tsx)
+**页面级增强**:
+```typescript
+// 所有页面背景
+bg-gradient-to-br from-background via-muted/10 to-background
+
+// Loading/Error 状态
+- 更大的 spinner
+- 改进的文字层级
+- 渐变背景
+```
+
+### 8.3 设计原则
+
+1. **视觉层次**: 5 级字号系统 (xs/sm/base/lg/xl)，清晰主次
+2. **空间呼吸**: 大尺寸卡片 + 充足内边距 + 合理间距
+3. **多层阴影**: shadow-card 系列，营造深度
+4. **渐变点缀**: badge、背景、选中状态使用渐变
+5. **微交互**: hover/selected 多维度反馈 (位移+缩放+阴影+颜色)
+6. **统一动画**: duration-300 ease-out
+
+### 8.4 技术要点
+
+**自定义工具类** (index.css):
+```css
+@layer utilities {
+  .shadow-card { /* 双层阴影 */ }
+  .shadow-card-hover { /* 深度阴影 */ }
+  .shadow-card-selected { /* 彩色光晕 */ }
+  .dark .shadow-card { /* 深色模式变体 */ }
+}
+```
+
+**渐变背景模式**:
+```typescript
+// 双色渐变 (badge)
+bg-gradient-to-br from-blue-500 to-blue-600
+
+// 三色渐变 (selected card)
+bg-gradient-to-br from-primary/5 via-card to-card
+
+// 页面渐变 (background)
+bg-gradient-to-br from-background via-muted/10 to-background
+```
+
+**组件改动统计**:
+- index.css: +40 行 (阴影工具类)
+- StepNode.tsx: 重构 70 行
+- FlowMap.tsx: 优化 10 行
+- StepDetailPanel.tsx: 重构 100 行
+- SessionHeader.tsx: 优化 15 行
+- WorkflowConsolePage.tsx: 优化 20 行
+
+### 8.5 测试验证
+
+```bash
+# 类型检查
+cd client && npx tsc --noEmit  # ✅ 通过
+
+# 构建
+cd client && npm run build     # ✅ 成功
+# 输出: CSS 28.26 KB, JS 233.25 KB
+
+# 预览
+cd client && npm run preview   # ✅ 启动
+
+# 开发
+cd client && npm run dev       # ✅ 启动
+```
+
+### 8.6 成果总结
+
+**优化效果**:
+- ✅ 视觉层次清晰，output_label 一眼识别
+- ✅ 空间舒适，无拥挤感
+- ✅ 阴影精致，有深度感
+- ✅ 交互流畅，反馈丰富
+- ✅ 色彩和谐，渐变恰当
+- ✅ 排版专业，细节考究
+- ✅ 达到 Figma/Framer 级别
+
+**关键指标对比**:
+```
+节点尺寸:    256×128px → 320×192px (+25%)
+内边距:      16px → 24px (+50%)
+主标题字号:  14px → 18px (+29%)
+阴影层数:    1 层 → 3 层
+hover 维度:  1 个 → 4 个 (位移+缩放+阴影+边框)
+```
