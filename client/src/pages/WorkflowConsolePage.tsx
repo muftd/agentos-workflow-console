@@ -1,46 +1,31 @@
 import { useEffect, useState } from "react";
+import { useApp, useCurrentSession } from "@/contexts/AppContext";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { SessionHeader } from "@/components/workflow/SessionHeader";
 import { FlowMap } from "@/components/workflow/FlowMap";
 import { StepDetailPanel } from "@/components/workflow/StepDetailPanel";
-import type { WorkflowSession } from "@/types/workflow";
 
 export function WorkflowConsolePage() {
-  const [session, setSession] = useState<WorkflowSession | null>(null);
+  const { state } = useApp();
+  const currentSession = useCurrentSession();
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Load workflow data
+  // Select first step when session changes
   useEffect(() => {
-    fetch('/data/workflow-log-sample.json')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Failed to load data: ${res.status} ${res.statusText}`);
-        }
-        return res.json();
-      })
-      .then((data: WorkflowSession) => {
-        setSession(data);
-        // Select first step by default
-        if (data.steps.length > 0) {
-          const firstStep = data.steps.sort((a, b) => a.order - b.order)[0];
-          setSelectedStepId(firstStep.id);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Failed to load workflow data:', err);
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+    if (currentSession && currentSession.steps.length > 0) {
+      const firstStep = [...currentSession.steps].sort((a, b) => a.order - b.order)[0];
+      setSelectedStepId(firstStep.id);
+    } else {
+      setSelectedStepId(null);
+    }
+  }, [currentSession?.session_id]);
 
   // Keyboard navigation: Arrow Left/Right to switch steps
   useEffect(() => {
-    if (!session || !selectedStepId) return;
+    if (!currentSession || !selectedStepId) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      const sortedSteps = [...session.steps].sort((a, b) => a.order - b.order);
+      const sortedSteps = [...currentSession.steps].sort((a, b) => a.order - b.order);
       const currentIndex = sortedSteps.findIndex((s) => s.id === selectedStepId);
 
       if (currentIndex === -1) return;
@@ -58,10 +43,10 @@ export function WorkflowConsolePage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [session, selectedStepId]);
+  }, [currentSession, selectedStepId]);
 
   // Loading state
-  if (loading) {
+  if (state.isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -72,15 +57,15 @@ export function WorkflowConsolePage() {
     );
   }
 
-  // Error state
-  if (error || !session) {
+  // No session state
+  if (!currentSession) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md">
-          <div className="text-5xl">⚠️</div>
-          <h2 className="text-xl font-bold text-foreground">Failed to Load Workflow</h2>
+          <div className="text-5xl">📋</div>
+          <h2 className="text-xl font-bold text-foreground">No Workflow Selected</h2>
           <p className="text-sm text-foreground/60 leading-relaxed">
-            {error || 'No data available'}
+            Please select or create a workflow to get started.
           </p>
         </div>
       </div>
@@ -88,18 +73,20 @@ export function WorkflowConsolePage() {
   }
 
   // Find selected step
-  const selectedStep = session.steps.find((s) => s.id === selectedStepId);
+  const selectedStep = currentSession.steps.find((s) => s.id === selectedStepId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
+      <Sidebar />
+
       <SessionHeader
-        title={session.title}
-        createdAt={session.created_at}
-        description={session.description}
+        title={currentSession.title}
+        createdAt={currentSession.created_at}
+        description={currentSession.description}
       />
 
       <FlowMap
-        steps={session.steps}
+        steps={currentSession.steps}
         selectedStepId={selectedStepId}
         onSelectStep={setSelectedStepId}
       />

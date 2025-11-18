@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 interface SessionHeaderProps {
   title: string;
   createdAt: string;
-  description: string;
+  description?: string;
 }
 
 /**
@@ -33,10 +33,14 @@ export function SessionHeader({ title, createdAt, description }: SessionHeaderPr
             <Clock className="w-4 h-4 text-primary" />
             {formatDate(createdAt)}
           </time>
-          <Separator orientation="vertical" className="h-4 hidden sm:block bg-border/60" />
-          <p className="text-sm text-foreground/70 line-clamp-2 sm:line-clamp-1 leading-relaxed">
-            {description}
-          </p>
+          {description && (
+            <>
+              <Separator orientation="vertical" className="h-4 hidden sm:block bg-border/60" />
+              <p className="text-sm text-foreground/70 line-clamp-2 sm:line-clamp-1 leading-relaxed">
+                {description}
+              </p>
+            </>
+          )}
         </div>
       </div>
     </header>
