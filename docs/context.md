@@ -982,3 +982,250 @@ className="text-gray-900 dark:text-gray-100"
 - [x] docs/task.md (Section 10: Replit 部署测试与问题修复)
 - [x] Git commits 记录完整
 - [x] 问题分析和解决方案文档化
+
+---
+
+## 18. 视觉设计突破性经验总结 (2025-11-19)
+
+### 18.1 用户评价
+
+> "本次UI更新是这个项目到目前为止最出色的更新：无论是session中的step节点配色，还是step details模块的渐变背景色，质量水准都非常高。尤其是后者，step details的渐变背景色，非常超预期。"
+
+**关键成果**:
+- ✅ Step节点配色系统达到专业水准
+- ✅ Step Details渐变背景超出预期
+- ✅ 整体视觉质量达到 Figma/Framer 级别
+
+### 18.2 核心设计原则提炼
+
+#### 1. 渐变背景的正确使用
+
+**成功案例: StepDetailPanel 背景**
+```tsx
+// ✅ 三色渐变 - 营造深度与层次
+className="bg-gradient-to-br
+  from-gray-100/30 dark:from-gray-800/30     // 起点：浅色透明
+  via-white dark:via-gray-900                // 中间：纯色
+  to-gray-100/20 dark:to-gray-800/20"        // 终点：更浅透明
+```
+
+**设计要点**:
+- **三色停止点**: 起点 → 中间 → 终点，避免单调
+- **透明度梯度**: 30% → 100% → 20%，创造呼吸感
+- **对角方向**: `gradient-to-br`(右下) 比直线更自然
+- **深浅对比**: 浅色透明 + 纯色 = 微妙深度感
+
+**错误做法**:
+```tsx
+// ❌ 双色渐变 - 过于生硬
+bg-gradient-to-b from-white to-gray-100
+
+// ❌ 不透明渐变 - 缺乏呼吸感
+bg-gradient-to-br from-gray-100 to-gray-200
+
+// ❌ 单一方向 - 缺乏空间感
+bg-gradient-to-r from-blue-50 to-blue-100
+```
+
+#### 2. 配色系统的层次化
+
+**StepNode 颜色编码系统**:
+```tsx
+// ✅ 双色渐变 Badge - 视觉冲击力强
+getActorColor(actor: string): string {
+  if (actor.includes('coach c'))
+    return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white';
+  if (actor.includes('coach a'))
+    return 'bg-gradient-to-br from-green-500 to-green-600 text-white';
+  // ...更多角色
+}
+```
+
+**设计要点**:
+- **渐变方向一致**: 所有 badge 都用 `gradient-to-br`
+- **双色差值**: 500 → 600 提供微妙变化
+- **白色文字**: 确保所有渐变背景上可读
+- **语义化配色**: 不同角色 = 不同色系（蓝/绿/紫/粉/橙）
+
+#### 3. 卡片渐变的高级技巧
+
+**成功案例: StepDetailPanel Output 卡片**
+```tsx
+// ✅ 渐变背景 + 渐变边框 = 双层视觉
+<Card className="
+  p-6
+  border-2 border-blue-600/20 dark:border-blue-500/20    // 透明边框
+  bg-gradient-to-br
+    from-blue-600/5 dark:from-blue-400/5                 // 起点：品牌色 5%
+    to-white dark:to-gray-900                            // 终点：纯背景色
+">
+```
+
+**设计要点**:
+- **边框透明度**: `/20` 提供微妙框线，不喧宾夺主
+- **背景起点透明**: `/5` 品牌色渗透，不压倒内容
+- **渐变到纯色**: 终点回归背景色，避免视觉疲劳
+- **深色模式适配**: 所有透明度在深色下同样有效
+
+**对比: Input 卡片（无渐变）**
+```tsx
+// ✅ 纯色卡片作为对比 - 突出 Output
+<Card className="
+  p-6
+  border-2 border-gray-200/50 dark:border-gray-700/50  // 中性色边框
+  // 无 bg-gradient，使用默认白色背景
+">
+```
+
+**设计原则**: Input 和 Output 必须有视觉区分，Output 更醒目
+
+#### 4. 图标与渐变的配合
+
+**InfoCard 组件的配色**:
+```tsx
+<div className="bg-gray-100/30 dark:bg-gray-800/30">  {/* 卡片浅背景 */}
+  <Icon className="text-blue-600 dark:text-blue-400"/>  {/* 品牌色图标 */}
+  <p className="text-gray-900/60">{label}</p>          {/* 次要文字 */}
+  <p className="text-gray-900">{value}</p>             {/* 主要文字 */}
+</div>
+```
+
+**设计要点**:
+- **图标点缀**: 使用品牌色突出，不用灰色
+- **背景浅淡**: `/30` 透明度不干扰文字
+- **文字层级**: 主要信息 = 纯色，次要信息 = 60% 透明
+- **统一间距**: `gap-3`, `p-4` 保持一致节奏
+
+### 18.3 深色模式适配策略
+
+**所有渐变的深色变体**:
+```tsx
+// 浅色模式                          深色模式
+from-gray-100/30                    from-gray-800/30
+via-white                           via-gray-900
+to-gray-100/20                      to-gray-800/20
+
+from-blue-600/5                     from-blue-400/5
+to-white                            to-gray-900
+
+border-blue-600/20                  border-blue-500/20
+```
+
+**规律总结**:
+1. **浅色 gray-100 → 深色 gray-800** (翻转色阶)
+2. **浅色 white → 深色 gray-900** (纯色终点)
+3. **品牌色浅化**: blue-600 → blue-400 (深色下降低饱和度)
+4. **透明度不变**: `/30`, `/5`, `/20` 保持一致
+
+### 18.4 实施建议
+
+#### 未来迭代遵循的原则
+
+**1. 渐变使用场景**:
+- ✅ **大面积背景**: 页面、区域、卡片容器
+- ✅ **强调元素**: Badge、选中状态、品牌色卡片
+- ❌ **小元素**: 按钮文字、图标、小标签
+- ❌ **密集区域**: 表格、列表项
+
+**2. 透明度选择**:
+```tsx
+/5   - 极浅，用于品牌色渗透（Output 卡片）
+/20  - 浅，用于边框、分隔线
+/30  - 中浅，用于卡片背景（InfoCard）
+/40  - 中，用于图标、辅助文字
+/60  - 中深，用于次要文字
+/80  - 深，用于主要内容
+```
+
+**3. 渐变方向**:
+- `gradient-to-br` (右下): **推荐** - 最自然
+- `gradient-to-b` (下): 适用于垂直区域
+- `gradient-to-r` (右): 适用于水平进度
+- ❌ `gradient-to-tl` (左上): 避免，视觉不自然
+
+**4. 颜色组合验证**:
+```tsx
+// ✅ 合格的渐变背景
+from-[light-color]/[low-opacity]    // 起点浅 + 低透明
+via-[pure-color]                    // 中间纯色
+to-[light-color]/[lower-opacity]    // 终点更浅
+
+// ✅ 合格的边框配色
+border-[brand-color]/20             // 品牌色 20% 透明
+
+// ✅ 合格的文字层级
+text-gray-900 dark:text-gray-100    // 主要
+text-gray-900/60 dark:text-gray-100/60  // 次要
+text-gray-900/40 dark:text-gray-100/40  // 辅助
+```
+
+### 18.5 快速检查清单
+
+**实施渐变前的自查**:
+- [ ] 是否使用三色停止点？
+- [ ] 透明度是否形成梯度？
+- [ ] 深色模式是否适配？
+- [ ] 是否避免渐变过度使用？
+- [ ] 文字在渐变上是否可读？
+- [ ] 是否与周边元素形成对比？
+
+**代码审查要点**:
+```bash
+# 检查渐变使用是否规范
+grep -r "gradient-to" client/src/
+
+# 检查透明度是否合理
+grep -r "/[0-9]" client/src/ | grep "className"
+
+# 检查深色模式是否完整
+grep -r "dark:" client/src/ | wc -l
+```
+
+### 18.6 典型场景模板
+
+**模板 1: 大区域背景**
+```tsx
+<div className="bg-gradient-to-br
+  from-gray-100/30 dark:from-gray-800/30
+  via-white dark:via-gray-900
+  to-gray-100/20 dark:to-gray-800/20
+  p-8">
+  {/* 内容 */}
+</div>
+```
+
+**模板 2: 强调卡片**
+```tsx
+<Card className="
+  border-2 border-blue-600/20 dark:border-blue-500/20
+  bg-gradient-to-br
+    from-blue-600/5 dark:from-blue-400/5
+    to-white dark:to-gray-900
+  p-6">
+  {/* 内容 */}
+</Card>
+```
+
+**模板 3: 图标 + 文字组合**
+```tsx
+<div className="bg-gray-100/30 dark:bg-gray-800/30 p-4 rounded-lg">
+  <Icon className="text-blue-600 dark:text-blue-400" />
+  <p className="text-gray-900/60 dark:text-gray-100/60">{secondary}</p>
+  <p className="text-gray-900 dark:text-gray-100">{primary}</p>
+</div>
+```
+
+**模板 4: Badge 渐变**
+```tsx
+<Badge className="
+  bg-gradient-to-br
+  from-blue-500 to-blue-600
+  text-white
+  shadow-sm">
+  {label}
+</Badge>
+```
+
+---
+
+**本节意义**: 这是 v0.2 开发过程中最重要的视觉设计突破，为未来所有UI改进提供了可复用的设计语言和实施模式

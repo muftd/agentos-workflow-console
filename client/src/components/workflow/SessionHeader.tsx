@@ -23,7 +23,7 @@ function formatDate(isoString: string): string {
 
 export function SessionHeader({ title, createdAt, description }: SessionHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+    <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="container max-w-7xl mx-auto px-6 md:px-8 py-5 md:py-7">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
           {title}
