@@ -82,15 +82,17 @@ export function Sidebar() {
   return (
     <>
       {/* Menu trigger button - highly visible */}
-      <Button
-        variant="default"
-        size="icon"
-        onClick={toggleSidebar}
-        className="fixed top-5 md:top-7 left-6 md:left-8 z-[60] !bg-blue-600 hover:!bg-blue-700 !text-white shadow-lg border-2 !border-blue-700"
-        aria-label="Toggle sessions sidebar"
-      >
-        <Menu className="w-5 h-5" />
-      </Button>
+      {!state.isSidebarOpen && (
+        <Button
+          variant="default"
+          size="icon"
+          onClick={toggleSidebar}
+          className="fixed top-5 md:top-7 left-6 md:left-8 z-40 !bg-blue-600 hover:!bg-blue-700 !text-white shadow-lg border-2 !border-blue-700"
+          aria-label="Toggle sessions sidebar"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+      )}
 
       {/* Sidebar Sheet */}
       <Sheet open={state.isSidebarOpen} onOpenChange={toggleSidebar}>
@@ -147,7 +149,7 @@ export function Sidebar() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteSession}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
             >
               Delete
             </AlertDialogAction>

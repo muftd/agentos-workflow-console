@@ -138,8 +138,8 @@ export function WorkflowConsolePage() {
       {state.isLoading && (
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-primary mx-auto"></div>
-            <p className="text-foreground/60 font-medium">Loading workflow...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+            <p className="text-gray-900/60 dark:text-gray-100/60 font-medium">Loading workflow...</p>
           </div>
         </div>
       )}
@@ -149,11 +149,11 @@ export function WorkflowConsolePage() {
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center space-y-4 max-w-md px-6">
             <div className="text-5xl">📋</div>
-            <h2 className="text-xl font-bold text-foreground">No Workflow Selected</h2>
-            <p className="text-sm text-foreground/60 leading-relaxed">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">No Workflow Selected</h2>
+            <p className="text-sm text-gray-900/60 dark:text-gray-100/60 leading-relaxed">
               Please select or create a workflow to get started.
             </p>
-            <p className="text-xs text-foreground/40 leading-relaxed">
+            <p className="text-xs text-gray-900/40 dark:text-gray-100/40 leading-relaxed">
               Click the menu button in the top-left corner to open the session list.
             </p>
           </div>
@@ -208,7 +208,7 @@ export function WorkflowConsolePage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteStep}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
             >
               Delete
             </AlertDialogAction>

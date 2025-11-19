@@ -21,8 +21,8 @@ export function SessionList({
   if (sessions.length === 0) {
     return (
       <div className="text-center py-12 px-4">
-        <p className="text-sm text-foreground/40">No workflows yet</p>
-        <p className="text-xs text-foreground/30 mt-2">
+        <p className="text-sm text-gray-900/40 dark:text-gray-100/40">No workflows yet</p>
+        <p className="text-xs text-gray-900/30 dark:text-gray-100/30 mt-2">
           Create your first workflow to get started
         </p>
       </div>
