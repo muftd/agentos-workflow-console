@@ -29,9 +29,14 @@ export function SessionList({
     );
   }
 
+  // Sort sessions by created_at (newest first)
+  const sortedSessions = [...sessions].sort((a, b) =>
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
   return (
     <div className="space-y-3">
-      {sessions.map((session) => (
+      {sortedSessions.map((session) => (
         <SessionListItem
           key={session.session_id}
           session={session}

@@ -75,7 +75,6 @@ export function StepFormDialog({
     // Validation
     const newErrors: { [key: string]: string } = {};
     if (!actor.trim()) newErrors.actor = "Actor is required";
-    if (!tool.trim()) newErrors.tool = "Tool is required";
     if (!inputLabel.trim()) newErrors.inputLabel = "Input label is required";
     if (!outputLabel.trim()) newErrors.outputLabel = "Output label is required";
 
@@ -146,22 +145,13 @@ export function StepFormDialog({
                   </div>
 
                   <div className="grid gap-2">
-                    <Label htmlFor="tool" className="flex items-center gap-1">
-                      Tool
-                      <span className="text-red-600 dark:text-red-400 text-base">*</span>
-                    </Label>
+                    <Label htmlFor="tool">Tool (optional)</Label>
                     <Input
                       id="tool"
                       placeholder="Claude Code, ChatGPT, etc."
                       value={tool}
                       onChange={(e) => setTool(e.target.value)}
-                      className={errors.tool ? "border-red-600 dark:border-red-400" : ""}
                     />
-                    {errors.tool && (
-                      <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
-                        <span className="font-semibold">⚠</span> {errors.tool}
-                      </p>
-                    )}
                   </div>
                 </div>
 

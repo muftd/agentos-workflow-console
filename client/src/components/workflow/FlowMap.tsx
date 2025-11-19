@@ -55,11 +55,11 @@ export function FlowMap({
               )}
               <Button
                 variant="outline"
-                className="w-80 h-48 border-2 border-dashed border-blue-600/40 dark:border-blue-400/40 bg-blue-600/5 dark:bg-blue-400/5 hover:bg-blue-600/10 dark:hover:bg-blue-400/10 hover:border-blue-600/60 dark:hover:border-blue-400/60 transition-all duration-300 !text-gray-900 dark:!text-gray-100"
+                className="w-80 h-48 border-2 border-dashed border-purple-400/40 dark:border-purple-400/40 bg-purple-600/5 dark:bg-purple-400/5 hover:bg-purple-600/10 dark:hover:bg-purple-400/10 hover:border-purple-500/60 dark:hover:border-purple-400/60 transition-all duration-300"
                 onClick={onAddStep}
               >
-                <div className="flex flex-col items-center gap-3">
-                  <Plus className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                <div className="flex flex-col items-center gap-3 text-purple-600 dark:text-purple-400">
+                  <Plus className="w-10 h-10" />
                   <span className="text-sm font-medium">Add New Step</span>
                 </div>
               </Button>
